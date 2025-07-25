@@ -26,36 +26,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string) => {
-    setIsLoading(true);
-    try {
-      const response = await fetch('/api/auth/login', { //for login API
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
+  setIsLoading(true);
+  try {
+    const response = await fetch('/api/auth/signin', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      // Backend expects: { userNameOrEmail, password }
+      body: JSON.stringify({
+        userNameOrEmail: email,
+        password: password,
+      }),
+    });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Login failed');
-      }
-
-      const data = await response.json();
-      const userWithAuthType = {
-        ...data.user,
-        createdAt: new Date(data.user.createdAt),
-        updatedAt: data.user.updatedAt ? new Date(data.user.updatedAt) : undefined,
-      };
-      
-      setUser(userWithAuthType);
-      localStorage.setItem("auth_user", JSON.stringify(userWithAuthType));
-    } catch (error) {
-      throw error;
-    } finally {
-      setIsLoading(false);
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Login failed');
     }
-  };
+
+    const data = await response.json();
+    const userWithAuthType = {
+      ...data.user,
+      createdAt: new Date(data.user.createdAt),
+      updatedAt: data.user.updatedAt ? new Date(data.user.updatedAt) : undefined,
+    };
+
+    setUser(userWithAuthType);
+    localStorage.setItem("auth_user", JSON.stringify(userWithAuthType));
+  } catch (error: any) {
+    console.error("Login error:", error.message);
+    throw error;
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   const signup = async (userData: any) => {
     setIsLoading(true);
