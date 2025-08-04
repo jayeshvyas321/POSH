@@ -4,11 +4,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import {
   LayoutDashboard,
   Users,
-  BookOpen,
   BarChart3,
   Settings,
   LogOut,
   Menu,
+  Shield,
 } from "lucide-react";
 import type { NavItem } from "@/types";
 
@@ -24,20 +24,21 @@ const navigationItems: NavItem[] = [
     label: "User Management",
     icon: "Users",
     path: "/users",
-    roles: ["admin", "manager"],
+    permission: "user_view",
   },
   {
-    id: "training",
-    label: "Training",
-    icon: "BookOpen",
-    path: "/training",
+    id: "roles",
+    label: "Roles Management",
+    icon: "Shield",
+    path: "/roles",
+    roles: ["admin"], // Admin only
   },
   {
     id: "reports",
     label: "Reports",
     icon: "BarChart3",
     path: "/reports",
-    roles: ["admin", "manager"],
+    permission: "reports_view",
   },
   {
     id: "settings",
@@ -50,10 +51,10 @@ const navigationItems: NavItem[] = [
 const iconMap = {
   LayoutDashboard,
   Users,
-  BookOpen,
   BarChart3,
   Settings,
-};
+  Shield,
+} as const;
 
 interface SidebarProps {
   isOpen: boolean;
@@ -61,12 +62,27 @@ interface SidebarProps {
 }
 
 export function Sidebar({ isOpen, onToggle }: SidebarProps) {
-  const { user, logout } = useAuth();
+  const { user, logout, hasPermission, isAdmin } = useAuth();
   const [location] = useLocation();
 
-  const filteredNavItems = navigationItems.filter(item => 
-    !item.roles || (user && item.roles.includes(user.role))
-  );
+  const filteredNavItems = navigationItems.filter(item => {
+    // Check role-based access (for backward compatibility)
+    if (item.roles && (!user || !item.roles.includes(user.role))) {
+      return false;
+    }
+    
+    // Check permission-based access
+    if (item.permission && !hasPermission(item.permission)) {
+      return false;
+    }
+    
+    // Special case for admin-only items
+    if (item.roles?.includes('admin') && !isAdmin()) {
+      return false;
+    }
+    
+    return true;
+  });
 
   return (
     <>
@@ -93,7 +109,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
               <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                 <LayoutDashboard className="w-5 h-5 text-white" />
               </div>
-              <h1 className="text-xl font-bold text-slate-800">ZUCITECH</h1>
+              <h1 className="text-xl font-bold text-slate-800">Enterprise App</h1>
             </div>
             <Button
               variant="ghost"

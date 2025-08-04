@@ -4,3 +4,29 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Replit specific files (remove when using as template)
+.replit
+replit.nix
+
+# Development/template files (remove when using as template)
+AuthContext-local.tsx
+README-LOCAL-SETUP.md
+package-final.json
+package-windows.json
+start-dev.bat
+vite.config-fixed.ts
+vite.config-local.ts
+vite.config.local.ts
+API-INTEGRATION-GUIDE.md

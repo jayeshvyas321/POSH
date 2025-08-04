@@ -9,7 +9,8 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Dashboard from "@/pages/Dashboard";
 import Login from "@/pages/Login";
 import UserManagement from "@/pages/UserManagement";
-import Training from "@/pages/Training";
+import RolesManagement from "@/pages/RolesManagement";
+
 import Reports from "@/pages/Reports";
 import Settings from "@/pages/Settings";
 import NotFound from "@/pages/not-found";
@@ -29,17 +30,18 @@ function Router() {
         </ProtectedRoute>
       } />
       <Route path="/users" component={() => 
-        <ProtectedRoute roles={["admin", "manager"]}>
+        <ProtectedRoute permission="user_view">
           <UserManagement />
         </ProtectedRoute>
       } />
-      <Route path="/training" component={() => 
-        <ProtectedRoute>
-          <Training />
+      <Route path="/roles" component={() => 
+        <ProtectedRoute adminOnly={true}>
+          <RolesManagement />
         </ProtectedRoute>
       } />
+
       <Route path="/reports" component={() => 
-        <ProtectedRoute roles={["admin", "manager"]}>
+        <ProtectedRoute permission="reports_view">
           <Reports />
         </ProtectedRoute>
       } />

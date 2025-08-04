@@ -1,0 +1,52 @@
+I now want to **update the existing project to support roles and permissions**, using the following rules:
+
+✅ 1. JWT Token
+- After login, the token contains:
+  - `user_id`
+  - `role` (string)
+  - `permissions` (array of strings like `user_view`, `user_edit`, etc.)
+- Decode the token and store the user info + permissions in a global context (or update existing auth context).
+
+✅ 2. Role & Permission Rules
+- `admin` role is hardcoded.
+- Only admin (e.g., user with username `zucitech`) can access the **Roles Management** page.
+- Admin can:
+  - Create roles
+  - Assign permissions
+  - Assign roles to users
+- Roles are created by admin; permissions are hardcoded.
+
+✅ 3. Pages & Permissions
+- User Management page: visible only if user has `user_view` permission.
+- Inside User Management, clicking a user opens profile.
+  - If user has `user_edit`, show Edit button to change the role.
+- Roles Management page: visible only to `admin` role.
+- Settings, Reports, Dashboard, etc. should check if the user has required permission before rendering sensitive content.
+
+✅ 4. Sidebar / Menu Updates
+- Update existing sidebar to render menu items conditionally:
+  - Example:
+    ```jsx
+    {hasPermission('user_view') && <MenuItem to="/user-management" />}
+    {isAdmin() && <MenuItem to="/roles-management" />}
+    ```
+- Use a utility function or HOC to check for permissions.
+
+✅ 5. Routing & Access Control
+- Update existing routes to check for permissions before rendering components.
+  - Example using ProtectedRoute:
+    ```jsx
+    <ProtectedRoute permission="user_view">
+      <UserManagement />
+    </ProtectedRoute>
+    ```
+
+✅ 6. Utility Functions to Implement
+- `hasPermission(permission: string): boolean`
+- `isAdmin(): boolean`
+- These can be added inside `authContext` or a helper file.
+
+✅ 7. No backend code needed, just consume existing APIs.
+✅ 8. Don’t break existing page layouts or designs.
+
+Please update the **existing React codebase**, using minimal changes, to implement the above permission-based control logic in components, routes, and UI.

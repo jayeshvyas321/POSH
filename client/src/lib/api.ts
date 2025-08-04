@@ -36,27 +36,21 @@ export const userApi = {
     const response = await apiRequest("PUT", `/api/users/${id}`, data);
     return response.json();
   },
+
+  deleteUser: async (id: number): Promise<void> => {
+    await apiRequest("DELETE", `/api/users/${id}`);
+  },
 };
 
-// Training API
-export const trainingApi = {
-  getTrainings: async () => {
-    const response = await apiRequest("GET", "/api/trainings");
+// Roles API
+export const rolesApi = {
+  getRoles: async () => {
+    const response = await apiRequest("GET", "/api/roles");
     return response.json();
   },
 
-  getUserTrainings: async (userId: number) => {
-    const response = await apiRequest("GET", `/api/users/${userId}/trainings`);
-    return response.json();
-  },
-
-  createTraining: async (data: any) => {
-    const response = await apiRequest("POST", "/api/trainings", data);
-    return response.json();
-  },
-
-  assignTraining: async (data: any) => {
-    const response = await apiRequest("POST", "/api/user-trainings", data);
+  createRole: async (data: any) => {
+    const response = await apiRequest("POST", "/api/roles", data);
     return response.json();
   },
 };

@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { loginSchema, insertUserSchema, insertTrainingSchema, insertUserTrainingSchema, insertNotificationSchema } from "@shared/schema";
+import { loginSchema, insertUserSchema, insertNotificationSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication routes
@@ -108,45 +108,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Training routes
-  app.get("/api/trainings", async (req, res) => {
+  app.delete("/api/users/:id", async (req, res) => {
     try {
-      const trainings = await storage.getAllTrainings();
-      res.json(trainings);
+      const id = parseInt(req.params.id);
+      const user = await storage.getUser(id);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Mark user as inactive instead of actual deletion
+      await storage.updateUser(id, { isActive: false });
+      res.json({ message: "User deleted successfully" });
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch trainings" });
+      res.status(500).json({ message: "Failed to delete user" });
     }
   });
 
-  app.post("/api/trainings", async (req, res) => {
-    try {
-      const trainingData = insertTrainingSchema.parse(req.body);
-      const training = await storage.createTraining(trainingData);
-      res.json(training);
-    } catch (error) {
-      res.status(400).json({ message: "Invalid request data" });
-    }
-  });
 
-  app.get("/api/users/:id/trainings", async (req, res) => {
-    try {
-      const userId = parseInt(req.params.id);
-      const userTrainings = await storage.getUserTrainings(userId);
-      res.json(userTrainings);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch user trainings" });
-    }
-  });
-
-  app.post("/api/user-trainings", async (req, res) => {
-    try {
-      const userTrainingData = insertUserTrainingSchema.parse(req.body);
-      const userTraining = await storage.assignTraining(userTrainingData);
-      res.json(userTraining);
-    } catch (error) {
-      res.status(400).json({ message: "Invalid request data" });
-    }
-  });
 
   // Notification routes
   app.get("/api/users/:id/notifications", async (req, res) => {
@@ -188,23 +167,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/dashboard/stats", async (req, res) => {
     try {
       const users = await storage.getAllUsers();
-      const trainings = await storage.getAllTrainings();
       
       const totalUsers = users.length;
-      const activeTrainings = trainings.filter(t => t.isActive).length;
+      const activeUsers = users.filter(u => u.isActive).length;
       
-      // Calculate completion rate (mock calculation)
-      const completionRate = 89; // Mock data
-      const pendingTasks = 23; // Mock data
+      // Calculate user distribution by role
+      const adminUsers = users.filter(u => u.role === 'admin').length;
+      const managerUsers = users.filter(u => u.role === 'manager').length;
+      const employeeUsers = users.filter(u => u.role === 'employee').length;
 
       res.json({
         totalUsers,
-        activeTrainings,
-        completionRate,
-        pendingTasks
+        activeUsers,
+        adminUsers,
+        managerUsers,
+        employeeUsers
       });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch dashboard stats" });
+    }
+  });
+
+  // Roles routes (mock for now)
+  app.get("/api/roles", async (req, res) => {
+    try {
+      const mockRoles = [
+        {
+          id: 1,
+          name: 'admin',
+          permissions: ['user_view', 'user_edit', 'user_create', 'user_delete', 'reports_view', 'settings_manage'],
+          description: 'Full system access',
+          createdAt: new Date('2024-01-01')
+        },
+        {
+          id: 2,
+          name: 'manager',
+          permissions: ['user_view', 'user_edit', 'reports_view'],
+          description: 'Can manage users and view reports',
+          createdAt: new Date('2024-01-01')
+        },
+        {
+          id: 3,
+          name: 'employee',
+          permissions: [],
+          description: 'Basic user access',
+          createdAt: new Date('2024-01-01')
+        }
+      ];
+      res.json(mockRoles);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch roles" });
+    }
+  });
+
+  app.post("/api/roles", async (req, res) => {
+    try {
+      // In a real app, you'd save to database
+      // For now, just return the created role with an ID
+      const roleData = req.body;
+      const newRole = {
+        ...roleData,
+        id: Date.now(), // Mock ID
+        createdAt: new Date(),
+      };
+      res.json(newRole);
+    } catch (error) {
+      res.status(400).json({ message: "Failed to create role" });
     }
   });
 

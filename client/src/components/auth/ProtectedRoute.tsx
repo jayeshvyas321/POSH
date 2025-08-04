@@ -1,35 +1,55 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { Redirect } from "wouter";
+import { useLocation } from "wouter";
+import { useEffect } from "react";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  roles?: string[];
+  permission?: string;
+  adminOnly?: boolean;
+  fallbackPath?: string;
 }
 
-export function ProtectedRoute({ children, roles }: ProtectedRouteProps) {
-  const { user, isLoading } = useAuth();
+export function ProtectedRoute({ 
+  children, 
+  permission, 
+  adminOnly = false,
+  fallbackPath = "/dashboard" 
+}: ProtectedRouteProps) {
+  const { user, hasPermission, isAdmin, isLoading } = useAuth();
+  const [, setLocation] = useLocation();
 
+  useEffect(() => {
+    if (!isLoading && user) {
+      // Check admin access
+      if (adminOnly && !isAdmin()) {
+        setLocation(fallbackPath);
+        return;
+      }
+
+      // Check permission access
+      if (permission && !hasPermission(permission)) {
+        setLocation(fallbackPath);
+        return;
+      }
+    }
+  }, [user, isLoading, permission, adminOnly, hasPermission, isAdmin, setLocation, fallbackPath]);
+
+  // Show loading while checking permissions
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
       </div>
     );
   }
 
-  if (!user) {
-    return <Redirect to="/login" />;
+  // Don't render if user doesn't have required permissions
+  if (adminOnly && !isAdmin()) {
+    return null;
   }
 
-  if (roles && !roles.includes(user.role)) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-600">Access Denied</h1>
-          <p className="text-gray-600 mt-2">You don't have permission to view this page.</p>
-        </div>
-      </div>
-    );
+  if (permission && !hasPermission(permission)) {
+    return null;
   }
 
   return <>{children}</>;

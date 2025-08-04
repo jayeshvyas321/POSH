@@ -2,18 +2,28 @@ export interface AuthUser {
   id: number;
   username: string;
   email: string;
-  role: "admin" | "manager" | "employee";
+  role: string;
+  permissions: string[];
   firstName: string;
   lastName: string;
   isActive: boolean;
   createdAt: Date;
 }
 
+export interface Role {
+  id: number;
+  name: string;
+  permissions: string[];
+  description?: string;
+  createdAt: Date;
+}
+
 export interface DashboardStats {
   totalUsers: number;
-  activeTrainings: number;
-  completionRate: number;
-  pendingTasks: number;
+  activeUsers: number;
+  adminUsers: number;
+  managerUsers: number;
+  employeeUsers: number;
 }
 
 export interface ChartData {
@@ -42,4 +52,5 @@ export interface NavItem {
   icon: string;
   path: string;
   roles?: string[];
+  permission?: string;
 }

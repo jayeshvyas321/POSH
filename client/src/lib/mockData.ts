@@ -5,6 +5,7 @@ export const mockUser: AuthUser = {
   username: "admin",
   email: "admin@example.com",
   role: "admin",
+  permissions: ["user_view", "user_edit", "user_create", "user_delete", "training_view", "training_edit", "training_create", "reports_view", "settings_manage"],
   firstName: "John",
   lastName: "Doe",
   isActive: true,

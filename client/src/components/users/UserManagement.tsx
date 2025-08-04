@@ -1,75 +1,68 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Search, Plus, Edit, Trash2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  role: string;
-  status: "active" | "inactive";
-  lastLogin: string;
-}
-
-// Mock data - replace with actual API call
-const mockUsers: User[] = [
-  {
-    id: 1,
-    name: "John Doe",
-    email: "john@example.com",
-    role: "admin",
-    status: "active",
-    lastLogin: "2024-01-20",
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    email: "jane@example.com",
-    role: "manager",
-    status: "active",
-    lastLogin: "2024-01-19",
-  },
-  {
-    id: 3,
-    name: "Bob Johnson",
-    email: "bob@example.com",
-    role: "employee",
-    status: "active",
-    lastLogin: "2024-01-18",
-  },
-];
+import { userApi } from "@/lib/api";
+import { EditUserForm } from "./EditUserForm";
+import { AddUserForm } from "./AddUserForm";
+import { DeleteUserDialog } from "./DeleteUserDialog";
+import type { AuthUser } from "@/types";
 
 export function UserManagement() {
-  const { user } = useAuth();
-  const [users, setUsers] = useState<User[]>(mockUsers);
+  const { user, hasPermission } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [editingUser, setEditingUser] = useState<AuthUser | null>(null);
+  const [deletingUser, setDeletingUser] = useState<AuthUser | null>(null);
+
+  const { 
+    data: users = [], 
+    isLoading, 
+    error 
+  } = useQuery({
+    queryKey: ["/api/users"],
+    queryFn: userApi.getUsers,
+  });
 
   const filteredUsers = users.filter(u =>
-    u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    u.email.toLowerCase().includes(searchTerm.toLowerCase())
+    (u.firstName + " " + u.lastName).toLowerCase().includes(searchTerm.toLowerCase()) ||
+    u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    u.username.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleAddUser = () => {
-    // TODO: Open add user modal/form
-    console.log("Add user");
+    setShowAddForm(true);
   };
 
-  const handleEditUser = (userId: number) => {
-    // TODO: Open edit user modal/form
-    console.log("Edit user:", userId);
+  const handleEditUser = (user: AuthUser) => {
+    setEditingUser(user);
   };
 
-  const handleDeleteUser = (userId: number) => {
-    // TODO: Show confirmation dialog and delete user
-    console.log("Delete user:", userId);
+  const handleDeleteUser = (user: AuthUser) => {
+    setDeletingUser(user);
   };
 
-  const canManageUsers = user && (user.role === "admin" || user.role === "manager");
+  const canCreateUsers = hasPermission("user_create");
+  const canEditUsers = hasPermission("user_edit");
+  const canDeleteUsers = hasPermission("user_delete");
+
+  if (error) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center text-red-600">
+            Failed to load users. Please try again.
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -77,7 +70,7 @@ export function UserManagement() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>User Management</CardTitle>
-            {canManageUsers && (
+            {canCreateUsers && (
               <Button onClick={handleAddUser} className="space-x-2">
                 <Plus className="w-4 h-4" />
                 <span>Add User</span>
@@ -100,66 +93,101 @@ export function UserManagement() {
           </div>
 
           {/* Users Table */}
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Last Login</TableHead>
-                {canManageUsers && <TableHead>Actions</TableHead>}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredUsers.map((u) => (
-                <TableRow key={u.id}>
-                  <TableCell className="font-medium">{u.name}</TableCell>
-                  <TableCell>{u.email}</TableCell>
-                  <TableCell>
-                    <Badge variant={u.role === "admin" ? "default" : "secondary"}>
-                      {u.role}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={u.status === "active" ? "default" : "destructive"}>
-                      {u.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{u.lastLogin}</TableCell>
-                  {canManageUsers && (
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEditUser(u.id)}
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteUser(u.id)}
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  )}
-                </TableRow>
+          {isLoading ? (
+            <div className="space-y-3">
+              {Array(5).fill(0).map((_, i) => (
+                <Skeleton key={i} className="h-12 w-full" />
               ))}
-            </TableBody>
-          </Table>
-
-          {filteredUsers.length === 0 && (
-            <div className="text-center py-8 text-slate-500">
-              No users found matching your search.
             </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Username</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Status</TableHead>
+                  {(canEditUsers || canDeleteUsers) && <TableHead>Actions</TableHead>}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredUsers.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                      {searchTerm ? "No users found matching your search." : "No users found."}
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredUsers.map((u) => (
+                    <TableRow key={u.id}>
+                      <TableCell className="font-medium">
+                        {u.firstName} {u.lastName}
+                      </TableCell>
+                      <TableCell>{u.username}</TableCell>
+                      <TableCell>{u.email}</TableCell>
+                      <TableCell>
+                        <Badge variant={u.role === "admin" ? "default" : "secondary"}>
+                          {u.role}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={u.isActive ? "default" : "secondary"}>
+                          {u.isActive ? "Active" : "Inactive"}
+                        </Badge>
+                      </TableCell>
+                      {(canEditUsers || canDeleteUsers) && (
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            {canEditUsers && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEditUser(u)}
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                            )}
+                            {canDeleteUsers && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDeleteUser(u)}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
           )}
         </CardContent>
       </Card>
+
+      {/* Forms and Dialogs */}
+      <AddUserForm 
+        isOpen={showAddForm} 
+        onClose={() => setShowAddForm(false)} 
+      />
+      
+      {editingUser && (
+        <EditUserForm 
+          user={editingUser}
+          isOpen={!!editingUser} 
+          onClose={() => setEditingUser(null)} 
+        />
+      )}
+      
+      <DeleteUserDialog 
+        user={deletingUser}
+        isOpen={!!deletingUser} 
+        onClose={() => setDeletingUser(null)} 
+      />
     </div>
   );
 }
