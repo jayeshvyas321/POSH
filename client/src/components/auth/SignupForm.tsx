@@ -28,7 +28,7 @@ export function SignupForm({ onSwitchToLogin }: SignupFormProps) {
       password: "",
       firstName: "",
       lastName: "",
-      role: "employee",
+      role: "ROLE_EMPLOYEE",
       isActive: true,
     },
   });
@@ -137,14 +137,14 @@ export function SignupForm({ onSwitchToLogin }: SignupFormProps) {
 
           <div className="space-y-2">
             <Label>Role</Label>
-            <Select onValueChange={(value) => form.setValue("role", value as any)} defaultValue="employee">
+            <Select onValueChange={(value) => form.setValue("role", value as any)} defaultValue="ROLE_EMPLOYEE">
               <SelectTrigger>
                 <SelectValue placeholder="Select a role" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="employee">Employee</SelectItem>
-                <SelectItem value="manager">Manager</SelectItem>
-                <SelectItem value="admin">Administrator</SelectItem>
+                <SelectItem value="ROLE_EMPLOYEE">Employee</SelectItem>
+                <SelectItem value="ROLE_MANAGER">Manager</SelectItem>
+                <SelectItem value="ROLE_ADMIN">Administrator</SelectItem>
               </SelectContent>
             </Select>
           </div>

@@ -31,7 +31,7 @@ const navigationItems: NavItem[] = [
     label: "Roles Management",
     icon: "Shield",
     path: "/roles",
-    roles: ["admin"], // Admin only
+    roles: ["ROLE_ADMIN"], // Admin only
   },
   {
     id: "reports",
@@ -77,7 +77,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
     }
     
     // Special case for admin-only items
-    if (item.roles?.includes('admin') && !isAdmin()) {
+    if (item.roles?.includes('ROLE_ADMIN') && !isAdmin()) {
       return false;
     }
     

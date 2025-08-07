@@ -2,7 +2,7 @@ import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Edit, Trash2, Shield } from "lucide-react";
 import { CreateRoleForm } from "@/components/roles/CreateRoleForm";
 import type { Role } from "@/types";
@@ -17,7 +17,7 @@ const AVAILABLE_PERMISSIONS = [
   { id: 'settings_manage', name: 'Manage Settings', description: 'Can manage system settings' },
 ];
 
-// Mock roles data - in real app this would come from API
+
 const mockRoles: Role[] = [
   {
     id: 1,
@@ -42,9 +42,35 @@ const mockRoles: Role[] = [
   }
 ];
 
+
 export default function RolesManagement() {
-  const [roles, setRoles] = useState<Role[]>(mockRoles);
+  const [roles, setRoles] = useState<Role[]>([]);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchRoles() {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await fetch('/api/roles');
+        if (!res.ok) throw new Error('Failed to fetch roles');
+        const data = await res.json();
+        // Convert createdAt to Date object if needed
+        setRoles(data.map((role: any) => ({
+          ...role,
+          createdAt: role.createdAt ? new Date(role.createdAt) : new Date()
+        })));
+      } catch (e: any) {
+        setError('Could not load roles from server. Showing mock data.');
+        setRoles(mockRoles);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchRoles();
+  }, []);
 
   const getPermissionName = (permissionId: string) => {
     return AVAILABLE_PERMISSIONS.find(p => p.id === permissionId)?.name || permissionId;
@@ -53,6 +79,8 @@ export default function RolesManagement() {
   return (
     <Layout title="Roles Management">
       <div className="space-y-6">
+        {loading && <div className="text-center text-gray-500">Loading roles...</div>}
+        {error && <div className="text-center text-red-500">{error}</div>}
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>

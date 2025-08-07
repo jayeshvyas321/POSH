@@ -91,8 +91,8 @@ if (data.accessToken) {
     id: data.id,
     username: data.userName,
     email: data.email,
-    role: data.roles?.[0]?.name || 'employee',
-    permissions: [],
+    role: data.roles?.[0]?.name || 'ROLE_EMPLOYEE',
+    permissions: data.roles?.[0]?.permissions || [],
     firstName: data.firstName,
     lastName: data.lastName,
     isActive: data.active,
@@ -140,9 +140,10 @@ if (data.accessToken) {
       
       // Handle JWT token response
       if (data.statusCode === 201) {
-  console.log('Signup completed successfully:', data.statusMsg);
-  return;
-} else {
+        console.log('Signup completed successfully:', data.statusMsg);
+        window.location.href = "/dashboard";
+        return;
+      } else {
         // Fallback for existing API format
         const userWithAuthType = {
           ...data.user,
@@ -152,6 +153,7 @@ if (data.accessToken) {
         };
         setUser(userWithAuthType);
         localStorage.setItem("auth_user", JSON.stringify(userWithAuthType));
+        window.location.href = "/dashboard";
       }
     } catch (error) {
       throw error;
@@ -174,7 +176,7 @@ if (data.accessToken) {
   };
 
   const isAdmin = (): boolean => {
-    return user?.role === 'admin' || user?.username === 'zucitech';
+    return user?.role === 'ROLE_ADMIN' || user?.username === 'zucitech';
   };
 
   return (
