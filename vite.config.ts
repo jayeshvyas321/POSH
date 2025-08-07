@@ -29,6 +29,12 @@ export default defineConfig({
     emptyOutDir: true,
   },
   server: {
+    proxy: {
+    '/api': {
+      target: 'http://localhost:8080', // replace with your backend URL
+      changeOrigin: true
+    }
+  },
     fs: {
       strict: true,
       deny: ["**/.*"],

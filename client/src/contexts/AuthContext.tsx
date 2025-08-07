@@ -57,54 +57,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(false);
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (userNameOrEmail: string, password: string) => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/auth/login', {
+      const url = '/api/auth/login';
+      console.log('Calling URL:', url);
+      console.log('Full URL will be:', window.location.origin + url);
+      
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ userNameOrEmail, password }),
       });
+
+      console.log('Login response status:', response.status);
+      console.log('Login response ok:', response.ok);
 
       if (!response.ok) {
         const error = await response.json();
+        console.log('Login error response:', error);
         throw new Error(error.message || 'Login failed');
       }
 
       const data = await response.json();
+      console.log('Login success response:', data);
       
       // Handle JWT token response
-      if (data.token) {
-        const decodedToken = decodeJWT(data.token);
-        if (decodedToken) {
-          const userWithAuthType = {
-            id: decodedToken.user_id,
-            username: decodedToken.username || data.user?.username || '',
-            email: decodedToken.email || data.user?.email || '',
-            role: decodedToken.role,
-            permissions: decodedToken.permissions || [],
-            firstName: decodedToken.firstName || data.user?.firstName || '',
-            lastName: decodedToken.lastName || data.user?.lastName || '',
-            isActive: true,
-            createdAt: new Date(data.user?.createdAt || Date.now())
-          };
-          setUser(userWithAuthType);
-          localStorage.setItem("auth_token", data.token);
-          localStorage.setItem("auth_user", JSON.stringify(userWithAuthType));
-        }
-      } else {
-        // Fallback for existing API format
-        const userWithAuthType = {
-          ...data.user,
-          permissions: data.user.permissions || [],
-          createdAt: new Date(data.user.createdAt),
-          updatedAt: data.user.updatedAt ? new Date(data.user.updatedAt) : undefined,
-        };
-        setUser(userWithAuthType);
-        localStorage.setItem("auth_user", JSON.stringify(userWithAuthType));
-      }
+      // Handle Spring Boot response format
+if (data.accessToken) {
+  const userWithAuthType = {
+    id: data.id,
+    username: data.userName,
+    email: data.email,
+    role: data.roles?.[0]?.name || 'employee',
+    permissions: [],
+    firstName: data.firstName,
+    lastName: data.lastName,
+    isActive: data.active,
+    createdAt: new Date()
+  };
+  setUser(userWithAuthType);
+  localStorage.setItem("auth_token", data.accessToken);
+  localStorage.setItem("auth_user", JSON.stringify(userWithAuthType));
+} else {
+  throw new Error('Invalid response format');
+}
     } catch (error) {
       throw error;
     } finally {
@@ -115,7 +114,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signup = async (userData: any) => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/auth/signup', {
+      console.log('Signup data being sent:', userData);
+      const url = '/api/auth/signup';
+      console.log('Calling URL:', url);
+      console.log('Full URL will be:', window.location.origin + url);
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -123,33 +126,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         body: JSON.stringify(userData),
       });
 
+      console.log('Signup response status:', response.status);
+      console.log('Signup response ok:', response.ok);
+
       if (!response.ok) {
         const error = await response.json();
+        console.log('Signup error response:', error);
         throw new Error(error.message || 'Signup failed');
       }
 
       const data = await response.json();
+      console.log('Signup success response:', data);
       
       // Handle JWT token response
-      if (data.token) {
-        const decodedToken = decodeJWT(data.token);
-        if (decodedToken) {
-          const userWithAuthType = {
-            id: decodedToken.user_id,
-            username: decodedToken.username || data.user?.username || '',
-            email: decodedToken.email || data.user?.email || '',
-            role: decodedToken.role,
-            permissions: decodedToken.permissions || [],
-            firstName: decodedToken.firstName || data.user?.firstName || '',
-            lastName: decodedToken.lastName || data.user?.lastName || '',
-            isActive: true,
-            createdAt: new Date(data.user?.createdAt || Date.now())
-          };
-          setUser(userWithAuthType);
-          localStorage.setItem("auth_token", data.token);
-          localStorage.setItem("auth_user", JSON.stringify(userWithAuthType));
-        }
-      } else {
+      if (data.statusCode === 201) {
+  console.log('Signup completed successfully:', data.statusMsg);
+  return;
+} else {
         // Fallback for existing API format
         const userWithAuthType = {
           ...data.user,
