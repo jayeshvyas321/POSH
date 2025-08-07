@@ -57,25 +57,35 @@ interface SidebarProps {
 }
 
 export function Sidebar({ isOpen, onToggle }: SidebarProps) {
-  const { user, logout, hasPermission, isAdmin } = useAuth();
+  const { user, logout, hasPermission, isAdmin, hasRole } = useAuth();
   const [location] = useLocation();
 
   const filteredNavItems = navigationItems.filter(item => {
-    // Check role-based access (for backward compatibility)
-    if (item.roles && (!user || !item.roles.includes(user.role))) {
+    // If admin, show all items except those with explicit role restrictions not matching admin
+    if (isAdmin()) {
+      if (item.roles && !item.roles.some(role => hasRole(role))) {
+        return false;
+      }
+      return true;
+    }
+    // If manager, allow all except admin-only tabs
+    if (hasRole('ROLE_MANAGER')) {
+      if (item.roles && !item.roles.some(role => hasRole(role))) {
+        return false;
+      }
+      // Hide admin-only tabs
+      if (item.roles && item.roles.includes('ROLE_ADMIN')) {
+        return false;
+      }
+      return true;
+    }
+    // For other users, check role and permission as usual
+    if (item.roles && (!user || !item.roles.some(role => hasRole(role)))) {
       return false;
     }
-    
-    // Check permission-based access
     if (item.permission && !hasPermission(item.permission)) {
       return false;
     }
-    
-    // Special case for admin-only items
-    if (item.roles?.includes('ROLE_ADMIN') && !isAdmin()) {
-      return false;
-    }
-    
     return true;
   });
 
@@ -131,7 +141,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
                   {user.firstName} {user.lastName}
                 </p>
                 <p className="text-sm text-slate-500 capitalize">
-                  {user.role}
+                  {user.roles?.map(r => r.name.replace('ROLE_', '').toLowerCase()).join(', ')}
                 </p>
               </div>
             </div>

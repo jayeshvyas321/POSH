@@ -48,7 +48,8 @@ export function UserManagement() {
     setDeletingUser(user);
   };
 
-  const canCreateUsers = hasPermission("user_create");
+  const { isAdmin, hasRole } = useAuth();
+  const canCreateUsers = hasPermission("user_create") || isAdmin() || (hasRole && hasRole('ROLE_MANAGER'));
   const canEditUsers = hasPermission("user_edit");
   const canDeleteUsers = hasPermission("user_delete");
 
@@ -127,9 +128,15 @@ export function UserManagement() {
                       <TableCell>{u.username}</TableCell>
                       <TableCell>{u.email}</TableCell>
                       <TableCell>
-                        <Badge variant={u.role === "admin" ? "default" : "secondary"}>
-                          {u.role}
-                        </Badge>
+                        {u.roles && u.roles.length > 0 ? (
+                          u.roles.map((role, idx) => (
+                            <Badge key={role.name} variant={role.name === "ROLE_ADMIN" ? "default" : "secondary"} className={idx > 0 ? "ml-1" : ""}>
+                              {role.name.replace('ROLE_', '').toLowerCase()}
+                            </Badge>
+                          ))
+                        ) : (
+                          <Badge variant="secondary">employee</Badge>
+                        )}
                       </TableCell>
                       <TableCell>
                         <Badge variant={u.isActive ? "default" : "secondary"}>

@@ -2,7 +2,7 @@ export interface AuthUser {
   id: number;
   username: string;
   email: string;
-  role: string;
+  roles: { id: number; name: string; permissions?: string[] }[];
   permissions: string[];
   firstName: string;
   lastName: string;

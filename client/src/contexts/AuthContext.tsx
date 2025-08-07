@@ -10,6 +10,7 @@ interface AuthContextType {
   isLoading: boolean;
   hasPermission: (permission: string) => boolean;
   isAdmin: () => boolean;
+  hasRole: (roleName: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -45,7 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           id: decodedToken.user_id,
           username: decodedToken.username || '',
           email: decodedToken.email || '',
-          role: decodedToken.role,
+          roles: decodedToken.roles || [{ id: 0, name: decodedToken.role || 'ROLE_EMPLOYEE' }],
           permissions: decodedToken.permissions || [],
           firstName: decodedToken.firstName || '',
           lastName: decodedToken.lastName || '',
@@ -83,27 +84,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const data = await response.json();
       console.log('Login success response:', data);
-      
-      // Handle JWT token response
-      // Handle Spring Boot response format
-if (data.accessToken) {
-  const userWithAuthType = {
-    id: data.id,
-    username: data.userName,
-    email: data.email,
-    role: data.roles?.[0]?.name || 'ROLE_EMPLOYEE',
-    permissions: data.roles?.[0]?.permissions || [],
-    firstName: data.firstName,
-    lastName: data.lastName,
-    isActive: data.active,
-    createdAt: new Date()
-  };
-  setUser(userWithAuthType);
-  localStorage.setItem("auth_token", data.accessToken);
-  localStorage.setItem("auth_user", JSON.stringify(userWithAuthType));
-} else {
-  throw new Error('Invalid response format');
-}
+
+      if (data.accessToken) {
+        const userWithAuthType = {
+          id: data.id,
+          username: data.userName,
+          email: data.email,
+          roles: data.roles || [{ id: 0, name: 'ROLE_EMPLOYEE' }],
+          permissions: Array.isArray(data.roles) ? data.roles.flatMap((r: any) => r.permissions || []) : [],
+          firstName: data.firstName,
+          lastName: data.lastName,
+          isActive: data.active,
+          createdAt: new Date()
+        };
+        setUser(userWithAuthType);
+        localStorage.setItem("auth_token", data.accessToken);
+        localStorage.setItem("auth_user", JSON.stringify(userWithAuthType));
+      } else {
+        throw new Error('Invalid response format');
+      }
     } catch (error) {
       throw error;
     } finally {
@@ -170,17 +169,21 @@ if (data.accessToken) {
     window.location.href = "/login";
   };
 
-  // Utility functions for permission checking
+  // Utility functions for permission and role checking
   const hasPermission = (permission: string): boolean => {
     return user?.permissions?.includes(permission) ?? false;
   };
 
+  const hasRole = (roleName: string): boolean => {
+    return user?.roles?.some((role: any) => role.name === roleName) ?? false;
+  };
+
   const isAdmin = (): boolean => {
-    return user?.role === 'ROLE_ADMIN' || user?.username === 'zucitech';
+    return hasRole('ROLE_ADMIN') || user?.username === 'zucitech';
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout, isLoading, hasPermission, isAdmin }}>
+    <AuthContext.Provider value={{ user, login, signup, logout, isLoading, hasPermission, isAdmin, hasRole }}>
       {children}
     </AuthContext.Provider>
   );
