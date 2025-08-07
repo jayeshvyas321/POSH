@@ -135,19 +135,7 @@ export function SignupForm({ onSwitchToLogin }: SignupFormProps) {
             )}
           </div>
 
-          <div className="space-y-2">
-            <Label>Role</Label>
-            <Select onValueChange={(value) => form.setValue("role", value as any)} defaultValue="ROLE_EMPLOYEE">
-              <SelectTrigger>
-                <SelectValue placeholder="Select a role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ROLE_EMPLOYEE">Employee</SelectItem>
-                <SelectItem value="ROLE_MANAGER">Manager</SelectItem>
-                <SelectItem value="ROLE_ADMIN">Administrator</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+
 
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? "Creating Account..." : "Create Account"}
