@@ -22,51 +22,7 @@ export default function Settings() {
   return (
     <Layout title="Settings">
       <div className="space-y-6 max-w-4xl">
-        {/* Profile Settings */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Profile Settings</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="firstName">First Name</Label>
-                <Input
-                  id="firstName"
-                  defaultValue={user?.firstName}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="lastName">Last Name</Label>
-                <Input
-                  id="lastName"
-                  defaultValue={user?.lastName}
-                />
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
-              <Input
-                id="email"
-                type="email"
-                defaultValue={user?.email}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
-              <Input
-                id="username"
-                defaultValue={user?.username}
-              />
-            </div>
 
-            <Button onClick={handleSaveProfile}>
-              Save Profile
-            </Button>
-          </CardContent>
-        </Card>
 
         {/* Notification Settings */}
         <Card>

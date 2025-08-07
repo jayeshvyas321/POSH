@@ -40,12 +40,7 @@ const navigationItems: NavItem[] = [
     path: "/reports",
     permission: "reports_view",
   },
-  {
-    id: "settings",
-    label: "Settings",
-    icon: "Settings",
-    path: "/settings",
-  },
+
 ];
 
 const iconMap = {

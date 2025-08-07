@@ -13,6 +13,7 @@ import RolesManagement from "@/pages/RolesManagement";
 
 import Reports from "@/pages/Reports";
 import Settings from "@/pages/Settings";
+import Profile from "@/pages/Profile";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -48,6 +49,11 @@ function Router() {
       <Route path="/settings" component={() => 
         <ProtectedRoute>
           <Settings />
+        </ProtectedRoute>
+      } />
+      <Route path="/profile" component={() => 
+        <ProtectedRoute>
+          <Profile />
         </ProtectedRoute>
       } />
       <Route component={NotFound} />

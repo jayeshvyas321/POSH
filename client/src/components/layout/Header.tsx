@@ -3,7 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { useAuth } from "@/contexts/AuthContext";
-import { Menu, Search } from "lucide-react";
+import { Menu, Search, Settings, LogOut, User } from "lucide-react";
+import { useLocation } from "wouter";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
 interface HeaderProps {
   onToggleSidebar: () => void;
@@ -11,13 +13,22 @@ interface HeaderProps {
 }
 
 export function Header({ onToggleSidebar, title }: HeaderProps) {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
+  const [, navigate] = useLocation();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     // TODO: Implement search functionality
     console.log("Searching for:", searchQuery);
+  };
+
+  const handleEditProfile = () => {
+    navigate("/profile");
+  };
+
+  const handleSettings = () => {
+    navigate("/settings");
   };
 
   return (
@@ -51,15 +62,28 @@ export function Header({ onToggleSidebar, title }: HeaderProps) {
           {/* Notifications */}
           <NotificationBell />
 
-          {/* User Profile */}
+          {/* User Profile Dropdown */}
           {user && (
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-slate-300 rounded-full flex items-center justify-center">
-                <span className="text-xs font-medium text-slate-600">
-                  {user.firstName[0]}{user.lastName[0]}
-                </span>
-              </div>
-            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="w-8 h-8 bg-slate-300 rounded-full flex items-center justify-center focus:outline-none">
+                  <span className="text-xs font-medium text-slate-600">
+                    {user.firstName[0]}{user.lastName[0]}
+                  </span>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleEditProfile}>
+                  <User className="w-4 h-4 mr-2" /> Edit Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleSettings}>
+                  <Settings className="w-4 h-4 mr-2" /> Settings
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={logout} className="text-red-600">
+                  <LogOut className="w-4 h-4 mr-2" /> Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
         </div>
       </div>
