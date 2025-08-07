@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { ResetPasswordForm } from "@/components/auth/ResetPasswordForm";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocation } from "wouter";
@@ -47,17 +49,21 @@ export function LoginForm({ onSwitchToSignup }: LoginFormProps) {
     }
   };
 
+  const [resetOpen, setResetOpen] = useState(false);
+
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader className="text-center">
-        <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
-          <ShieldCheck className="w-8 h-8 text-white" />
-        </div>
-        <CardTitle className="text-2xl">Welcome Back</CardTitle>
-        <p className="text-muted-foreground">Sign in to your account to continue</p>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+    <>
+      <Dialog open={resetOpen} onOpenChange={setResetOpen}>
+        <Card className="w-full max-w-md mx-auto">
+          <CardHeader className="text-center">
+            <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
+              <ShieldCheck className="w-8 h-8 text-white" />
+            </div>
+            <CardTitle className="text-2xl">Welcome Back</CardTitle>
+            <p className="text-muted-foreground">Sign in to your account to continue</p>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email Address</Label>
             <Input
@@ -106,9 +112,11 @@ export function LoginForm({ onSwitchToSignup }: LoginFormProps) {
                 Remember me
               </Label>
             </div>
-            <Button variant="link" className="px-0 text-sm">
-              Forgot password?
-            </Button>
+            <DialogTrigger asChild>
+              <Button variant="link" className="px-0 text-sm" type="button">
+                Forgot password?
+              </Button>
+            </DialogTrigger>
           </div>
 
           <Button type="submit" className="w-full" disabled={isLoading}>
@@ -126,5 +134,10 @@ export function LoginForm({ onSwitchToSignup }: LoginFormProps) {
         </div>
       </CardContent>
     </Card>
+    <DialogContent className="max-w-md w-full p-0">
+      <ResetPasswordForm onSubmit={() => setResetOpen(false)} />
+    </DialogContent>
+  </Dialog>
+  </>
   );
 }
