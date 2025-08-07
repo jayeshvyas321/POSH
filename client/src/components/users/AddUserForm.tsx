@@ -66,7 +66,17 @@ export function AddUserForm({ isOpen, onClose }: AddUserFormProps) {
   });
 
   const onSubmit = (data: AddUserFormData) => {
-    createUserMutation.mutate(data);
+    // Only send fields expected by backend
+    const payload = {
+      username: data.username,
+      email: data.email,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      password: data.password,
+      role: data.role, // string: 'admin', 'manager', 'employee'
+      isActive: data.isActive,
+    };
+    createUserMutation.mutate(payload);
   };
 
   return (

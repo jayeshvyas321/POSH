@@ -28,7 +28,8 @@ export const userApi = {
   },
 
   createUser: async (data: InsertUser): Promise<AuthUser> => {
-    const response = await apiRequest("POST", "/api/users", data);
+    // Use the signup endpoint for both admin add user and self-signup
+    const response = await apiRequest("POST", "/api/auth/signup", data);
     return response.json();
   },
 
