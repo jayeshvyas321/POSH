@@ -52,33 +52,33 @@ export function UserManagement() {
   const canEditUsers = hasPermission("user_edit");
   const canDeleteUsers = hasPermission("user_delete");
 
-  if (error) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="text-center text-red-600">
-            Failed to load users. Please try again.
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <div className="space-y-6">
+      {/* Always show Add User button and modal */}
+      {canCreateUsers && (
+        <div className="flex justify-end mb-4">
+          <Button onClick={handleAddUser} className="space-x-2">
+            <Plus className="w-4 h-4" />
+            <span>Add User</span>
+          </Button>
+        </div>
+      )}
+      <AddUserForm 
+        isOpen={showAddForm} 
+        onClose={() => setShowAddForm(false)} 
+      />
+
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>User Management</CardTitle>
-            {canCreateUsers && (
-              <Button onClick={handleAddUser} className="space-x-2">
-                <Plus className="w-4 h-4" />
-                <span>Add User</span>
-              </Button>
-            )}
-          </div>
+          <CardTitle>User Management</CardTitle>
         </CardHeader>
         <CardContent>
+          {/* Error message if user list fails */}
+          {error && (
+            <div className="text-center text-red-600 mb-4">
+              Failed to load users. Please try again.
+            </div>
+          )}
           {/* Search */}
           <div className="mb-6">
             <div className="relative">
@@ -99,7 +99,7 @@ export function UserManagement() {
                 <Skeleton key={i} className="h-12 w-full" />
               ))}
             </div>
-          ) : (
+          ) : !error ? (
             <Table>
               <TableHeader>
                 <TableRow>
@@ -165,16 +165,11 @@ export function UserManagement() {
                 )}
               </TableBody>
             </Table>
-          )}
+          ) : null}
         </CardContent>
       </Card>
 
       {/* Forms and Dialogs */}
-      <AddUserForm 
-        isOpen={showAddForm} 
-        onClose={() => setShowAddForm(false)} 
-      />
-      
       {editingUser && (
         <EditUserForm 
           user={editingUser}
@@ -182,7 +177,6 @@ export function UserManagement() {
           onClose={() => setEditingUser(null)} 
         />
       )}
-      
       <DeleteUserDialog 
         user={deletingUser}
         isOpen={!!deletingUser} 
