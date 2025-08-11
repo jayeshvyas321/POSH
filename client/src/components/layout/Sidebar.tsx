@@ -21,17 +21,17 @@ const navigationItems: NavItem[] = [
     path: "/dashboard",
   },
   {
-    id: "users",
+    id: "user-management",
     label: "User Management",
     icon: "Users",
     path: "/users",
     permission: "user_view",
   },
   {
-    id: "roles",
+    id: "roles-management",
     label: "Roles Management",
     icon: "Shield",
-    path: "/roles",
+    path: "/roles-management",
     roles: ["ROLE_ADMIN"], // Admin only
   },
   {
@@ -41,7 +41,6 @@ const navigationItems: NavItem[] = [
     path: "/reports",
     permission: "reports_view",
   },
-
 ];
 
 const iconMap = {
@@ -62,31 +61,10 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
   const [location] = useLocation();
 
   const filteredNavItems = navigationItems.filter(item => {
-    // If admin, show all items except those with explicit role restrictions not matching admin
-    if (isAdmin()) {
-      if (item.roles && !item.roles.some(role => hasRole(role))) {
-        return false;
-      }
-      return true;
-    }
-    // If manager, allow all except admin-only tabs
-    if (hasRole('ROLE_MANAGER')) {
-      if (item.roles && !item.roles.some(role => hasRole(role))) {
-        return false;
-      }
-      // Hide admin-only tabs
-      if (item.roles && item.roles.includes('ROLE_ADMIN')) {
-        return false;
-      }
-      return true;
-    }
-    // For other users, check role and permission as usual
-    if (item.roles && (!user || !item.roles.some(role => hasRole(role)))) {
-      return false;
-    }
-    if (item.permission && !hasPermission(item.permission)) {
-      return false;
-    }
+    if (item.id === "user-management" && !hasPermission("user_view")) return false;
+    if (item.permission && item.id !== "user-management" && !hasPermission(item.permission)) return false;
+    if (item.id === "roles-management" && !isAdmin()) return false;
+    if (item.roles && (!user || !item.roles.some(role => hasRole(role)))) return false;
     return true;
   });
 

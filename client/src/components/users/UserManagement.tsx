@@ -30,11 +30,17 @@ export function UserManagement() {
     queryFn: userApi.getUsers,
   });
 
-  const filteredUsers = users.filter(u =>
-    (u.firstName + " " + u.lastName).toLowerCase().includes(searchTerm.toLowerCase()) ||
-    u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    u.username.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredUsers = users.filter(u => {
+    const fullName = ((u.firstName || "") + " " + (u.lastName || "")).toLowerCase();
+    const email = (u.email || "").toLowerCase();
+    const username = (u.username || "").toLowerCase();
+    const search = searchTerm.toLowerCase();
+    return (
+      fullName.includes(search) ||
+      email.includes(search) ||
+      username.includes(search)
+    );
+  });
 
   const handleAddUser = () => {
     setShowAddForm(true);
@@ -52,6 +58,15 @@ export function UserManagement() {
   const canCreateUsers = hasPermission("user_create") || isAdmin() || (hasRole && hasRole('ROLE_MANAGER'));
   const canEditUsers = hasPermission("user_edit");
   const canDeleteUsers = hasPermission("user_delete");
+
+  if (!hasPermission("user_view")) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64">
+        <h2 className="text-xl font-semibold mb-2">No Access</h2>
+        <p className="text-muted-foreground">You do not have permission to view users.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

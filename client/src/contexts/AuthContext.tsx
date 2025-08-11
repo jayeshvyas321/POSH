@@ -86,12 +86,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log('Login success response:', data);
 
       if (data.accessToken) {
+        // Normalize permissions: if array of objects, map to array of names
+        let permissions: string[] = [];
+        if (Array.isArray(data.permissions) && data.permissions.length > 0) {
+          if (typeof data.permissions[0] === "object" && data.permissions[0].name) {
+            permissions = data.permissions.map((p: any) => p.name);
+          } else {
+            permissions = data.permissions;
+          }
+        }
         const userWithAuthType = {
           id: data.id,
           username: data.userName,
           email: data.email,
           roles: data.roles || [{ id: 0, name: 'ROLE_EMPLOYEE' }],
-          permissions: Array.isArray(data.roles) ? data.roles.flatMap((r: any) => r.permissions || []) : [],
+          permissions,
           firstName: data.firstName,
           lastName: data.lastName,
           isActive: data.active,
@@ -144,9 +153,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       } else {
         // Fallback for existing API format
+        // Normalize permissions for signup as well
+        let permissions: string[] = [];
+        if (data.user && Array.isArray(data.user.permissions) && data.user.permissions.length > 0) {
+          if (typeof data.user.permissions[0] === "object" && data.user.permissions[0].name) {
+            permissions = data.user.permissions.map((p: any) => p.name);
+          } else {
+            permissions = data.user.permissions;
+          }
+        }
         const userWithAuthType = {
           ...data.user,
-          permissions: data.user.permissions || [],
+          permissions,
           createdAt: new Date(data.user.createdAt),
           updatedAt: data.user.updatedAt ? new Date(data.user.updatedAt) : undefined,
         };
