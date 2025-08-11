@@ -31,7 +31,7 @@ const navigationItems: NavItem[] = [
     id: "roles-management",
     label: "Roles Management",
     icon: "Shield",
-    path: "/roles-management",
+    path: "/roles",
     roles: ["ROLE_ADMIN"], // Admin only
   },
   {
@@ -61,7 +61,8 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
   const [location] = useLocation();
 
   const filteredNavItems = navigationItems.filter(item => {
-    if (item.id === "user-management" && !hasPermission("user_view")) return false;
+    // Always show User Management for admin
+    if (item.id === "user-management" && !(hasPermission("user_view") || isAdmin())) return false;
     if (item.permission && item.id !== "user-management" && !hasPermission(item.permission)) return false;
     if (item.id === "roles-management" && !isAdmin()) return false;
     if (item.roles && (!user || !item.roles.some(role => hasRole(role)))) return false;
