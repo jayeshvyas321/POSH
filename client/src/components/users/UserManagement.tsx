@@ -1,4 +1,13 @@
 import { useState } from "react";
+// Map permission names to unique Tailwind color classes
+const permissionColorMap: Record<string, string> = {
+  user_view: "bg-blue-100 text-blue-800 border-blue-200",
+  user_edit: "bg-yellow-100 text-yellow-800 border-yellow-200",
+  user_delete: "bg-red-100 text-red-800 border-red-200",
+  user_create: "bg-green-100 text-green-800 border-green-200",
+  DEFAULT_PERMISSION: "bg-gray-100 text-gray-800 border-gray-200",
+  // Add more mappings as needed
+};
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,6 +29,9 @@ export function UserManagement() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingUser, setEditingUser] = useState<AuthUser | null>(null);
   const [deletingUser, setDeletingUser] = useState<AuthUser | null>(null);
+  // Sorting state
+  const [sortBy, setSortBy] = useState<'name' | 'email' | 'role'>("name");
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>("asc");
 
   const { 
     data: users = [], 
@@ -30,6 +42,7 @@ export function UserManagement() {
     queryFn: userApi.getUsers,
   });
 
+  // Filter users by search
   const filteredUsers = users.filter(u => {
     const fullName = ((u.firstName || "") + " " + (u.lastName || "")).toLowerCase();
     const email = (u.email || "").toLowerCase();
@@ -41,6 +54,35 @@ export function UserManagement() {
       username.includes(search)
     );
   });
+
+  // Sort users by selected column and order
+  const sortedUsers = [...filteredUsers].sort((a, b) => {
+    let aValue = "";
+    let bValue = "";
+    if (sortBy === "name") {
+      aValue = ((a.firstName || "") + " " + (a.lastName || "")).toLowerCase();
+      bValue = ((b.firstName || "") + " " + (b.lastName || "")).toLowerCase();
+    } else if (sortBy === "email") {
+      aValue = (a.email || "").toLowerCase();
+      bValue = (b.email || "").toLowerCase();
+    } else if (sortBy === "role") {
+      aValue = (a.roles && a.roles.length > 0 ? a.roles[0].name : "").toLowerCase();
+      bValue = (b.roles && b.roles.length > 0 ? b.roles[0].name : "").toLowerCase();
+    }
+    if (aValue < bValue) return sortOrder === "asc" ? -1 : 1;
+    if (aValue > bValue) return sortOrder === "asc" ? 1 : -1;
+    return 0;
+  });
+
+  // Sorting handler
+  const handleSort = (column: 'name' | 'email' | 'role') => {
+    if (sortBy === column) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortBy(column);
+      setSortOrder("asc");
+    }
+  };
 
   const handleAddUser = () => {
     setShowAddForm(true);
@@ -119,28 +161,52 @@ export function UserManagement() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Username</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead
+                    className="cursor-pointer select-none"
+                    onClick={() => handleSort('name')}
+                  >
+                    Name
+                    {sortBy === 'name' && (
+                      <span className="ml-1">{sortOrder === 'asc' ? '▲' : '▼'}</span>
+                    )}
+                  </TableHead>
+                  {/* Username column removed */}
+                  <TableHead
+                    className="cursor-pointer select-none"
+                    onClick={() => handleSort('email')}
+                  >
+                    Email
+                    {sortBy === 'email' && (
+                      <span className="ml-1">{sortOrder === 'asc' ? '▲' : '▼'}</span>
+                    )}
+                  </TableHead>
+                  <TableHead
+                    className="cursor-pointer select-none"
+                    onClick={() => handleSort('role')}
+                  >
+                    Role
+                    {sortBy === 'role' && (
+                      <span className="ml-1">{sortOrder === 'asc' ? '▲' : '▼'}</span>
+                    )}
+                  </TableHead>
+                  <TableHead>Permissions</TableHead>
                   {(canEditUsers || canDeleteUsers) && <TableHead>Actions</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredUsers.length === 0 ? (
+                {sortedUsers.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                       {searchTerm ? "No users found matching your search." : "No users found."}
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredUsers.map((u) => (
-                    <TableRow key={u.id}>
+                  sortedUsers.map((u, idx) => (
+                    <TableRow key={u.id} className={idx % 2 === 0 ? "bg-white" : "bg-slate-50"}>
                       <TableCell className="font-medium">
                         {u.firstName} {u.lastName}
                       </TableCell>
-                      <TableCell>{u.username}</TableCell>
+                      {/* Username column removed */}
                       <TableCell>{u.email}</TableCell>
                       <TableCell>
                         {u.roles && u.roles.length > 0 ? (
@@ -154,9 +220,24 @@ export function UserManagement() {
                         )}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={u.isActive ? "default" : "secondary"}>
-                          {u.isActive ? "Active" : "Inactive"}
-                        </Badge>
+                        {u.permissions && u.permissions.length > 0 ? (
+                          u.permissions.map((perm: any, idx: number) => {
+                            const colorClass = permissionColorMap[perm.name] || "bg-purple-100 text-purple-800 border-purple-200";
+                            return (
+                              <Badge
+                                key={perm.id || perm.name}
+                                variant="outline"
+                                className={
+                                  (idx > 0 ? "ml-1 " : "") + colorClass + " border"
+                                }
+                              >
+                                {perm.name}
+                              </Badge>
+                            );
+                          })
+                        ) : (
+                          <Badge variant="secondary">No permissions</Badge>
+                        )}
                       </TableCell>
                       {(canEditUsers || canDeleteUsers) && (
                         <TableCell>
@@ -166,6 +247,8 @@ export function UserManagement() {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleEditUser(u)}
+                                title="Edit user"
+                                className="border-blue-500 text-blue-600 hover:bg-blue-50 focus:ring-blue-200"
                               >
                                 <Edit className="w-4 h-4" />
                               </Button>
@@ -175,6 +258,8 @@ export function UserManagement() {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleDeleteUser(u)}
+                                title="Delete user"
+                                className="border-red-500 text-red-600 hover:bg-red-50 focus:ring-red-200"
                               >
                                 <Trash2 className="w-4 h-4" />
                               </Button>
