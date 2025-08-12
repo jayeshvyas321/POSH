@@ -1,3 +1,5 @@
+import React from 'react';
+import Chatbot from './components/ai-chatbot/Chatbot';
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -69,6 +71,7 @@ function App() {
           <NotificationProvider>
             <Toaster />
             <Router />
+           <Chatbot />
           </NotificationProvider>
         </AuthProvider>
       </TooltipProvider>
