@@ -39,7 +39,7 @@ const navigationItems: NavItem[] = [
     label: "Reports",
     icon: "BarChart3",
     path: "/reports",
-    permission: "reports_view",
+    permission: "report_view",
   },
 ];
 

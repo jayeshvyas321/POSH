@@ -61,9 +61,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (userNameOrEmail: string, password: string) => {
     setIsLoading(true);
     try {
-      const url = '/api/auth/login';
+      const url = 'http://localhost:8080/api/auth/login';
       console.log('Calling URL:', url);
-      console.log('Full URL will be:', window.location.origin + url);
       
       const response = await fetch(url, {
         method: 'POST',
