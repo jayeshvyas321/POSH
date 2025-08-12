@@ -11,7 +11,7 @@ export default function Reports() {
   };
 
   return (
-    <ProtectedRoute roles={["admin", "manager"]}>
+    <ProtectedRoute permission="report_view">
       <Layout title="Reports">
         <div className="space-y-6">
           <Card>
