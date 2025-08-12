@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { FiMessageCircle, FiX, FiMinus, FiSend } from 'react-icons/fi';
 
 const PREDEFINED_QA: Record<string, string> = {
@@ -31,6 +31,13 @@ const Chatbot: React.FC = () => {
   const [messages, setMessages] = useState<{ from: 'user' | 'bot'; text: string }[]>([]);
   const [input, setInput] = useState('');
   const [step, setStep] = useState<ChatStep>('welcome');
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
+    }
+  }, [messages, minimized]);
 
   // Reset chat when closed
   const handleClose = () => {
@@ -243,6 +250,7 @@ const Chatbot: React.FC = () => {
                   flexDirection: 'column',
                   gap: 8,
                 }}
+                ref={messagesEndRef}
               >
                 {messages.map((msg, idx) => (
                   <div
@@ -324,7 +332,7 @@ const Chatbot: React.FC = () => {
                     fontSize: 15,
                     outline: 'none',
                   }}
-                  disabled={minimized || step === 'thank_you'}
+                  disabled={minimized}
                 />
                 <button
                   type="submit"
@@ -336,13 +344,13 @@ const Chatbot: React.FC = () => {
                     padding: '8px 12px',
                     fontWeight: 600,
                     fontSize: 18,
-                    cursor: minimized || !input.trim() || step === 'thank_you' ? 'not-allowed' : 'pointer',
+                    cursor: minimized || !input.trim() ? 'not-allowed' : 'pointer',
                     transition: 'background 0.2s',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                   }}
-                  disabled={minimized || !input.trim() || step === 'thank_you'}
+                  disabled={minimized || !input.trim()}
                   aria-label="Send"
                 >
                   <FiSend />
