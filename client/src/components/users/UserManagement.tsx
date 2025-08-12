@@ -222,16 +222,14 @@ export function UserManagement() {
                       <TableCell>
                         {u.permissions && u.permissions.length > 0 ? (
                           u.permissions.map((perm: any, idx: number) => {
-                            const colorClass = permissionColorMap[perm.name] || "bg-purple-100 text-purple-800 border-purple-200";
+                            const permName = perm.name || perm;
+                            const colorClass = permissionColorMap[permName] || "bg-purple-100 text-purple-800 border-purple-200";
                             return (
                               <Badge
-                                key={perm.id || perm.name}
-                                variant="outline"
-                                className={
-                                  (idx > 0 ? "ml-1 " : "") + colorClass + " border"
-                                }
+                                key={perm.id || permName}
+                                className={(idx > 0 ? "ml-1 " : "") + colorClass + " border"}
                               >
-                                {perm.name}
+                                <span>{permName}</span>
                               </Badge>
                             );
                           })

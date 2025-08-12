@@ -19,7 +19,9 @@ export const authApi = {
 export const userApi = {
   getUsers: async (): Promise<AuthUser[]> => {
     const response = await apiRequest("GET", "/api/users");
-    return response.json();
+    const data = await response.json();
+    console.log("[DEBUG] /api/users response:", data);
+    return data;
   },
 
   getUser: async (id: number): Promise<AuthUser> => {

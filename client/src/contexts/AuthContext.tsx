@@ -61,13 +61,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (userNameOrEmail: string, password: string) => {
     setIsLoading(true);
     try {
-      const url = 'http://localhost:8080/api/auth/login';
+      const url = '/api/auth/login';
       console.log('Calling URL:', url);
       
       const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
         body: JSON.stringify({ userNameOrEmail, password }),
       });
