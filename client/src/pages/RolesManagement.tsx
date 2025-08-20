@@ -9,6 +9,27 @@ import { Plus, Edit, Trash2, Shield } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function RolesManagement() {
+  // Only keep one set of delete dialog state and handler
+  const [roleToDelete, setRoleToDelete] = useState<SimpleRole | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const handleDeleteRole = async () => {
+    if (!roleToDelete) return;
+    setDeleting(true);
+    try {
+      const token = localStorage.getItem("auth_token");
+      const res = await fetch(`http://localhost:8080/api/auth/deleteRole/${roleToDelete.id}`, {
+        method: "DELETE",
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
+      if (!res.ok) throw new Error("Failed to delete role");
+      setRoles(roles.filter(r => r.id !== roleToDelete.id));
+      setRoleToDelete(null);
+    } catch (e) {
+      alert("Error deleting role.");
+    } finally {
+      setDeleting(false);
+    }
+  };
   const { hasPermission, user } = useAuth();
   const canCreateRole = hasPermission("role_create");
   const canDeleteRole = hasPermission("role_create");
@@ -123,9 +144,19 @@ export default function RolesManagement() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {roles.length > 0 ? (
                 roles.map((role) => (
-                  <div key={role.id} className="p-3 border rounded-lg">
+                  <div key={role.id} className="p-3 border rounded-lg flex flex-col gap-2">
                     <div className="font-medium text-sm">{role.name.toUpperCase()}</div>
                     <div className="text-xs text-gray-600 mt-1">Role ID: {role.id}</div>
+                    {canDeleteRole && (
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        className="self-end"
+                        onClick={() => setRoleToDelete(role)}
+                      >
+                        <Trash2 className="w-4 h-4 mr-1" /> Delete
+                      </Button>
+                    )}
                   </div>
                 ))
               ) : (
@@ -140,6 +171,38 @@ export default function RolesManagement() {
           isOpen={showCreateForm} 
           onClose={() => setShowCreateForm(false)} 
         />
+
+        {/* Delete Role Confirmation Dialog */}
+        {roleToDelete && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+            <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm">
+              <h3 className="text-lg font-bold mb-2">Confirm Delete</h3>
+              <p className="mb-4">Are you sure you want to delete role <span className="font-semibold">{roleToDelete.name.toUpperCase()}</span>?</p>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setRoleToDelete(null)} disabled={deleting}>Cancel</Button>
+                <Button variant="destructive" onClick={handleDeleteRole} disabled={deleting}>
+                  {deleting ? "Deleting..." : "Delete"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Role Confirmation Dialog */}
+        {roleToDelete && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+            <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm">
+              <h3 className="text-lg font-bold mb-2">Confirm Delete</h3>
+              <p className="mb-4">Are you sure you want to delete role <span className="font-semibold">{roleToDelete.name.toUpperCase()}</span>?</p>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setRoleToDelete(null)} disabled={deleting}>Cancel</Button>
+                <Button variant="destructive" onClick={handleDeleteRole} disabled={deleting}>
+                  {deleting ? "Deleting..." : "Delete"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </Layout>
   );
