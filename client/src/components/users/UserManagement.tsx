@@ -33,13 +33,15 @@ export function UserManagement() {
   const [sortBy, setSortBy] = useState<'name' | 'email' | 'role'>("name");
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>("asc");
 
-  const { 
-    data: users = [], 
-    isLoading, 
-    error 
+  const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+  const {
+    data: users = [],
+    isLoading,
+    error
   } = useQuery({
     queryKey: ["/api/users"],
     queryFn: userApi.getUsers,
+    enabled: !!token,
   });
 
   // Filter users by search
@@ -97,11 +99,13 @@ export function UserManagement() {
   };
 
   const { isAdmin, hasRole } = useAuth();
+  // Permission logic based on requirements
   const canCreateUsers = hasPermission("user_create");
-  const canEditUsers = hasPermission("user_edit");
-  const canDeleteUsers = hasPermission("user_delete");
+  const canEditUsers = hasPermission("user_edit") || hasPermission("user_create");
+  const canDeleteUsers = hasPermission("user_edit") || hasPermission("user_create");
+  const canViewUsers = hasPermission("user_view") || hasPermission("user_edit") || hasPermission("user_create");
 
-  if (!hasPermission("user_view")) {
+  if (!canViewUsers) {
     return (
       <div className="flex flex-col items-center justify-center h-64">
         <h2 className="text-xl font-semibold mb-2">No Access</h2>
@@ -109,20 +113,29 @@ export function UserManagement() {
       </div>
     );
   }
+  if (!token) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64">
+        <h2 className="text-xl font-semibold mb-2">Authentication Error</h2>
+        <p className="text-muted-foreground">No auth token found. Please login again.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      {/* Always show Add User button if user can view */}
-      <div className="flex justify-end mb-4">
-        <Button 
-          onClick={handleAddUser} 
-          className="space-x-2" 
-          disabled={!canCreateUsers}
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add User</span>
-        </Button>
-      </div>
+      {/* Show Add User button only if user has user_create */}
+      {canCreateUsers && (
+        <div className="flex justify-end mb-4">
+          <Button 
+            onClick={handleAddUser} 
+            className="space-x-2"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add User</span>
+          </Button>
+        </div>
+      )}
       <AddUserForm 
         isOpen={showAddForm} 
         onClose={() => setShowAddForm(false)} 

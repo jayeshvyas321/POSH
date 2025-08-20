@@ -61,7 +61,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
   const [location] = useLocation();
 
   const filteredNavItems = navigationItems.filter(item => {
-    if (item.id === "user-management" && !(hasPermission("user_view") || isAdmin())) return false;
+    if (item.id === "user-management" && !(hasPermission("user_view") || hasPermission("user_edit") || hasPermission("user_create") || isAdmin())) return false;
     if (item.id === "roles-management" && !(hasPermission("role_view") || hasPermission("role_create"))) return false;
     if (item.permission && item.id !== "user-management" && item.id !== "roles-management" && !hasPermission(item.permission)) return false;
     return true;

@@ -33,7 +33,7 @@ function Router() {
         </ProtectedRoute>
       } />
       <Route path="/users" component={() => 
-        <ProtectedRoute permission="user_view">
+        <ProtectedRoute permission="user_view|user_edit|user_create">
           <UserManagement />
         </ProtectedRoute>
       } />
