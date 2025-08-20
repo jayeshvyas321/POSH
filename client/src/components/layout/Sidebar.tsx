@@ -32,7 +32,7 @@ const navigationItems: NavItem[] = [
     label: "Roles Management",
     icon: "Shield",
     path: "/roles",
-    roles: ["ROLE_ADMIN"], // Admin only
+    permission: "role_view", // Show tab if user has role_view or role_create
   },
   {
     id: "reports",
@@ -61,11 +61,9 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
   const [location] = useLocation();
 
   const filteredNavItems = navigationItems.filter(item => {
-    // Always show User Management for admin
     if (item.id === "user-management" && !(hasPermission("user_view") || isAdmin())) return false;
-    if (item.permission && item.id !== "user-management" && !hasPermission(item.permission)) return false;
-    if (item.id === "roles-management" && !isAdmin()) return false;
-    if (item.roles && (!user || !item.roles.some(role => hasRole(role)))) return false;
+    if (item.id === "roles-management" && !(hasPermission("role_view") || hasPermission("role_create"))) return false;
+    if (item.permission && item.id !== "user-management" && item.id !== "roles-management" && !hasPermission(item.permission)) return false;
     return true;
   });
 

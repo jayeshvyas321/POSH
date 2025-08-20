@@ -38,7 +38,7 @@ function Router() {
         </ProtectedRoute>
       } />
       <Route path="/roles" component={() => 
-        <ProtectedRoute adminOnly={true}>
+        <ProtectedRoute permission="role_view">
           <RolesManagement />
         </ProtectedRoute>
       } />

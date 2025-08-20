@@ -97,7 +97,7 @@ export function UserManagement() {
   };
 
   const { isAdmin, hasRole } = useAuth();
-  const canCreateUsers = hasPermission("user_create") || isAdmin() || (hasRole && hasRole('ROLE_MANAGER'));
+  const canCreateUsers = hasPermission("user_create");
   const canEditUsers = hasPermission("user_edit");
   const canDeleteUsers = hasPermission("user_delete");
 
@@ -112,15 +112,17 @@ export function UserManagement() {
 
   return (
     <div className="space-y-6">
-      {/* Always show Add User button and modal */}
-      {canCreateUsers && (
-        <div className="flex justify-end mb-4">
-          <Button onClick={handleAddUser} className="space-x-2">
-            <Plus className="w-4 h-4" />
-            <span>Add User</span>
-          </Button>
-        </div>
-      )}
+      {/* Always show Add User button if user can view */}
+      <div className="flex justify-end mb-4">
+        <Button 
+          onClick={handleAddUser} 
+          className="space-x-2" 
+          disabled={!canCreateUsers}
+        >
+          <Plus className="w-4 h-4" />
+          <span>Add User</span>
+        </Button>
+      </div>
       <AddUserForm 
         isOpen={showAddForm} 
         onClose={() => setShowAddForm(false)} 
