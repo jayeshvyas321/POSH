@@ -123,13 +123,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
     try {
       console.log('Signup data being sent:', userData);
-      const url = '/api/auth/signup';
+      const url = '/api/auth/register';
       console.log('Calling URL:', url);
       console.log('Full URL will be:', window.location.origin + url);
+      const token = localStorage.getItem('auth_token');
       const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : '',
+          'accept': '*/*',
         },
         body: JSON.stringify(userData),
       });
