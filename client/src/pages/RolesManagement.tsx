@@ -34,6 +34,7 @@ export default function RolesManagement() {
   const canCreateRole = hasPermission("role_create");
   const canDeleteRole = hasPermission("role_create");
   const canViewRole = hasPermission("role_view");
+  const canAddUserPermission = hasPermission("user_permission_create");
 
   interface Permission {
     id: number;
@@ -98,14 +99,26 @@ export default function RolesManagement() {
             <h1 className="text-3xl font-bold text-gray-900">Roles Management</h1>
             <p className="text-gray-600 mt-2">Create and manage user roles and permissions</p>
           </div>
-          <Button 
-            onClick={() => setShowCreateForm(true)} 
-            className="flex items-center gap-2" 
-            disabled={!canCreateRole}
-          >
-            <Plus className="w-4 h-4" />
-            Create Role
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              onClick={() => setShowCreateForm(true)} 
+              className="flex items-center gap-2" 
+              disabled={!canCreateRole}
+            >
+              <Plus className="w-4 h-4" />
+              Create Role
+            </Button>
+            {canAddUserPermission && (
+              <Button 
+                variant="secondary"
+                className="flex items-center gap-2"
+                onClick={() => alert('Add User Permission clicked!')}
+              >
+                <Shield className="w-4 h-4" />
+                Add User Permission
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Available Permissions Info (from API) */}
