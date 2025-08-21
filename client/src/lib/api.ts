@@ -18,7 +18,21 @@ export const authApi = {
 // User API
 export const userApi = {
   getUsers: async (): Promise<AuthUser[]> => {
-    const response = await apiRequest("GET", "/api/users");
+    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+    if (!token) throw new Error('No auth token found. Please login again.');
+    const apiUrl = window.location.origin + "/api/users";
+    const response = await fetch(apiUrl, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Accept": "application/json"
+      },
+      credentials: "include"
+    });
+    if (!response.ok) {
+      const text = (await response.text()) || response.statusText;
+      throw new Error(`${response.status}: ${text}`);
+    }
     const data = await response.json();
     console.log("[DEBUG] /api/users response:", data);
     return data;
@@ -30,8 +44,8 @@ export const userApi = {
   },
 
   createUser: async (data: InsertUser): Promise<AuthUser> => {
-    // Use the signup endpoint for both admin add user and self-signup
-    const response = await apiRequest("POST", "/api/auth/signup", data);
+    // Use the register endpoint for both admin add user and self-signup
+    const response = await apiRequest("POST", "/api/auth/register", data);
     return response.json();
   },
 

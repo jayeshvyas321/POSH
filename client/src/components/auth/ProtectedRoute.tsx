@@ -35,10 +35,14 @@ export function ProtectedRoute({
         return;
       }
 
-      // Check permission access
-      if (permission && !hasPermission(permission)) {
-        setLocation(fallbackPath);
-        return;
+      // Check permission access (support multiple permissions separated by |)
+      if (permission) {
+        const perms = permission.split('|').map(p => p.trim());
+        const hasAny = perms.some(p => hasPermission(p));
+        if (!hasAny) {
+          setLocation(fallbackPath);
+          return;
+        }
       }
     }
   }, [user, isLoading, permission, adminOnly, hasPermission, isAdmin, setLocation, fallbackPath, hasRole]);
@@ -67,8 +71,12 @@ export function ProtectedRoute({
     return <>{children}</>;
   }
 
-  if (permission && !hasPermission(permission)) {
-    return null;
+  if (permission) {
+    const perms = permission.split('|').map(p => p.trim());
+    const hasAny = perms.some(p => hasPermission(p));
+    if (!hasAny) {
+      return null;
+    }
   }
 
   return <>{children}</>;

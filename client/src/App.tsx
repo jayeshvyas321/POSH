@@ -1,3 +1,5 @@
+import React from 'react';
+import Chatbot from './components/ai-chatbot/Chatbot';
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -31,12 +33,12 @@ function Router() {
         </ProtectedRoute>
       } />
       <Route path="/users" component={() => 
-        <ProtectedRoute permission="user_view">
+        <ProtectedRoute permission="user_view|user_edit|user_create">
           <UserManagement />
         </ProtectedRoute>
       } />
       <Route path="/roles" component={() => 
-        <ProtectedRoute adminOnly={true}>
+        <ProtectedRoute permission="role_view">
           <RolesManagement />
         </ProtectedRoute>
       } />
@@ -69,6 +71,7 @@ function App() {
           <NotificationProvider>
             <Toaster />
             <Router />
+           <Chatbot />
           </NotificationProvider>
         </AuthProvider>
       </TooltipProvider>
