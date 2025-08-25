@@ -13,6 +13,19 @@ export const authApi = {
     const response = await apiRequest("POST", "/api/auth/signup", data);
     return response.json();
   },
+
+  resetPassword: async (data: { email: string; otp: string; newPassword: string }) => {
+    const response = await fetch("/api/auth/reset-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.detail || "Failed to reset password");
+    }
+    return response.json();
+  },
 };
 
 // User API
