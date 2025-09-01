@@ -1,3 +1,18 @@
+// Logs API
+export const logsApi = {
+  downloadLogs: async (): Promise<Blob> => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+    if (!token) throw new Error('No auth token found. Please login again.');
+    const response = await fetch("/logs/download", {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) throw new Error("Failed to download logs");
+    return response.blob();
+  },
+};
 import { apiRequest } from "@/lib/queryClient";
 import type { AuthUser, DashboardStats } from "@/types";
 import type { LoginData, InsertUser } from "@shared/schema";
