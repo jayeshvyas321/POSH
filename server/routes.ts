@@ -4,6 +4,20 @@ import { storage } from "./storage";
 import { loginSchema, insertUserSchema, insertNotificationSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Logs download route
+  app.get("/logs/download", async (req, res) => {
+    // Basic auth check (Bearer token)
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    // TODO: Validate token and permissions if needed
+
+    // Example: send dummy logs file
+    res.setHeader("Content-Disposition", "attachment; filename=logs.txt");
+    res.setHeader("Content-Type", "text/plain");
+    res.send("Log line 1\nLog line 2\nLog line 3\n");
+  });
   // Authentication routes
   app.post("/api/auth/login", async (req, res) => {
     try {

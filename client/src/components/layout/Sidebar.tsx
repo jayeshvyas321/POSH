@@ -10,7 +10,9 @@ import {
   LogOut,
   Menu,
   Shield,
+  Download,
 } from "lucide-react";
+import { logsApi } from "@/lib/api";
 import type { NavItem } from "@/types";
 
 const navigationItems: NavItem[] = [
@@ -43,12 +45,15 @@ const navigationItems: NavItem[] = [
   },
 ];
 
+// Add Download Logs as a separate button (no permission required)
+
 const iconMap = {
   LayoutDashboard,
   Users,
   BarChart3,
   Settings,
   Shield,
+  Download,
 } as const;
 
 interface SidebarProps {
@@ -153,6 +158,31 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
                 </li>
               );
             })}
+            {/* Download Logs Button */}
+            <li>
+              <Button
+                variant="ghost"
+                className="w-full justify-start space-x-3 h-11 text-slate-600 hover:bg-slate-50"
+                onClick={async () => {
+                  try {
+                    const blob = await logsApi.downloadLogs();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = "logs.txt";
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    window.URL.revokeObjectURL(url);
+                  } catch (err) {
+                    alert("Failed to download logs");
+                  }
+                }}
+              >
+                <Download className="w-5 h-5" />
+                <span>Download Logs</span>
+              </Button>
+            </li>
           </ul>
         </nav>
 

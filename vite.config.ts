@@ -30,11 +30,16 @@ export default defineConfig({
   },
   server: {
     proxy: {
-    '/api': {
-      target: 'http://localhost:8080', // replace with your backend URL
-      changeOrigin: true
-    }
-  },
+      '/api': {
+        target: 'http://localhost:8080', // replace with your backend URL
+        changeOrigin: true
+      },
+      '/logs/download': {
+        target: 'http://localhost:8080', // replace with your backend URL
+        changeOrigin: true,
+        secure: false,
+      },
+    },
     fs: {
       strict: true,
       deny: ["**/.*"],
