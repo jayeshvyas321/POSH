@@ -17,7 +17,7 @@ export default function RolesManagement() {
     setDeleting(true);
     try {
       const token = localStorage.getItem("auth_token");
-      const res = await fetch(`http://localhost:8080/api/auth/deleteRole/${roleToDelete.id}`, {
+      const res = await fetch(`http://98.130.134.68:8081/api/auth/deleteRole/${roleToDelete.id}`, {
         method: "DELETE",
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
@@ -60,7 +60,7 @@ export default function RolesManagement() {
         // Get JWT token from localStorage
         const token = localStorage.getItem("auth_token");
         // Fetch permissions with Authorization header
-        const permRes = await fetch('http://localhost:8080/api/auth/getAllPermissions', {
+        const permRes = await fetch('http://98.130.134.68:8081/api/auth/getAllPermissions', {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
         if (!permRes.ok) throw new Error('Failed to fetch permissions');
@@ -68,7 +68,7 @@ export default function RolesManagement() {
         setPermissions(permData);
 
         // Fetch roles from new API with Authorization header
-        const rolesRes = await fetch('http://localhost:8080/api/auth/getAllRoles', {
+        const rolesRes = await fetch('http://98.130.134.68:8081/api/auth/getAllRoles', {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
         if (!rolesRes.ok) throw new Error('Failed to fetch roles');

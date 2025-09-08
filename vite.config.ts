@@ -31,11 +31,11 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:8080', // replace with your backend URL
+        target: 'http://98.130.134.68:8081', // replace with your backend URL
         changeOrigin: true
       },
       '/logs/download': {
-        target: 'http://localhost:8080', // replace with your backend URL
+        target: 'http://98.130.134.68:8081', // replace with your backend URL
         changeOrigin: true,
         secure: false,
       },
