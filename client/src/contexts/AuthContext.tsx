@@ -61,7 +61,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (userNameOrEmail: string, password: string) => {
     setIsLoading(true);
     try {
-      const url = '/api/auth/login';
+      // Get API base URL from environment
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://98.130.134.68:8081';
+      const url = `${baseUrl}/api/auth/login`;
       console.log('Calling URL:', url);
       
       const response = await fetch(url, {
@@ -123,9 +125,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
     try {
       console.log('Signup data being sent:', userData);
-      const url = '/api/auth/register';
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://98.130.134.68:8081';
+      const url = `${baseUrl}/api/auth/register`;
       console.log('Calling URL:', url);
-      console.log('Full URL will be:', window.location.origin + url);
+      console.log('Full URL will be:', url);
       const token = localStorage.getItem('auth_token');
       const response = await fetch(url, {
         method: 'POST',
