@@ -154,7 +154,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : '',
         },
         body: JSON.stringify(transformedData),
       });
