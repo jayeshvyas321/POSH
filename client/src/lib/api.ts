@@ -81,8 +81,20 @@ export const userApi = {
       lastName: data.lastName,
     };
     
-    // Use the register endpoint for both admin add user and self-signup
-    const response = await apiRequest("POST", buildApiUrl(API_CONFIG.ENDPOINTS.AUTH.REGISTER), transformedData);
+    // Use direct fetch for registration to avoid CORS issues with credentials
+    const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.AUTH.REGISTER), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(transformedData),
+    });
+    
+    if (!response.ok) {
+      const text = (await response.text()) || response.statusText;
+      throw new Error(`${response.status}: ${text}`);
+    }
+    
     return response.json();
   },
 
