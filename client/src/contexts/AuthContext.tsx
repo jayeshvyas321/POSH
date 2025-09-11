@@ -66,9 +66,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const url = `${baseUrl}/api/auth/login`;
       console.log('Calling URL:', url);
       
-      // Transform login data to match Java backend expectations
+      // Send data in format Java backend expects
       const loginData = {
-        email: userNameOrEmail, // Your Java backend might expect email field
+        userNameOrEmail: userNameOrEmail, // Java backend expects this field name
         password: password
       };
       
