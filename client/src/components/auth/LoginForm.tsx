@@ -135,7 +135,7 @@ export function LoginForm({ onSwitchToSignup }: LoginFormProps) {
       </CardContent>
     </Card>
     <DialogContent className="max-w-md w-full p-0">
-      <ResetPasswordForm onSubmit={() => setResetOpen(false)} />
+      <ResetPasswordForm />
     </DialogContent>
   </Dialog>
   </>
