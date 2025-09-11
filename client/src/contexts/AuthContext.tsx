@@ -66,13 +66,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const url = `${baseUrl}/api/auth/login`;
       console.log('Calling URL:', url);
       
+      // Transform login data to match Java backend expectations
+      const loginData = {
+        email: userNameOrEmail, // Your Java backend might expect email field
+        password: password
+      };
+      
       const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        body: JSON.stringify({ userNameOrEmail, password }),
+        body: JSON.stringify(loginData),
       });
 
       console.log('Login response status:', response.status);
@@ -99,13 +105,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
         const userWithAuthType = {
           id: data.id,
-          username: data.userName,
+          username: data.userName || data.username, // Handle both userName (Java) and username (frontend)
           email: data.email,
           roles: data.roles || [{ id: 0, name: 'ROLE_EMPLOYEE' }],
           permissions,
           firstName: data.firstName,
           lastName: data.lastName,
-          isActive: data.active,
+          isActive: data.active !== undefined ? data.active : data.isActive || true,
           createdAt: new Date()
         };
         setUser(userWithAuthType);
@@ -125,10 +131,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
     try {
       console.log('Signup data being sent:', userData);
+      
+      // Transform field names to match Java backend entity:
+      // Frontend: username -> Backend: userName
+      // Frontend: isActive -> Backend: emailVerified (default false)
+      const transformedData = {
+        userName: userData.username, // Convert username to userName for Java backend
+        email: userData.email,
+        password: userData.password,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        emailVerified: false, // Default value for Java backend
+      };
+      
+      console.log('Transformed data for Java backend:', transformedData);
+      
       const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://98.130.134.68:8081';
       const url = `${baseUrl}/api/auth/register`;
       console.log('Calling URL:', url);
-      console.log('Full URL will be:', url);
       const token = localStorage.getItem('auth_token');
       const response = await fetch(url, {
         method: 'POST',
@@ -137,7 +157,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           'Authorization': token ? `Bearer ${token}` : '',
           'accept': '*/*',
         },
-        body: JSON.stringify(userData),
+        body: JSON.stringify(transformedData),
       });
 
       console.log('Signup response status:', response.status);

@@ -73,8 +73,18 @@ export const userApi = {
   },
 
   createUser: async (data: InsertUser): Promise<AuthUser> => {
+    // Transform field names to match Java backend
+    const transformedData = {
+      userName: data.username, // Convert username to userName for Java backend
+      email: data.email,
+      password: data.password,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      emailVerified: false, // Default value for Java backend
+    };
+    
     // Use the register endpoint for both admin add user and self-signup
-    const response = await apiRequest("POST", buildApiUrl(API_CONFIG.ENDPOINTS.AUTH.REGISTER), data);
+    const response = await apiRequest("POST", buildApiUrl(API_CONFIG.ENDPOINTS.AUTH.REGISTER), transformedData);
     return response.json();
   },
 
