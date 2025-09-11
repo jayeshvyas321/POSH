@@ -105,6 +105,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             permissions = data.permissions;
           }
         }
+        
         const userWithAuthType = {
           id: data.id,
           username: data.userName || data.username, // Handle both userName (Java) and username (frontend)
@@ -113,7 +114,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           permissions,
           firstName: data.firstName,
           lastName: data.lastName,
-          isActive: data.active !== undefined ? data.active : data.isActive || true,
+          isActive: data.emailVerified !== false, // Use emailVerified from Java backend
           createdAt: new Date()
         };
         setUser(userWithAuthType);
@@ -213,7 +214,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Utility functions for permission and role checking
   const hasPermission = (permission: string): boolean => {
-    return user?.permissions?.includes(permission) ?? false;
+    if (!user?.permissions) return false;
+    // Handle both string array and object array formats
+    return user.permissions.some((p: any) => 
+      typeof p === 'string' ? p === permission : p.name === permission
+    );
   };
 
   const hasRole = (roleName: string): boolean => {

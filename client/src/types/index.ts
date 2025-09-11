@@ -1,9 +1,9 @@
 export interface AuthUser {
-  id: number;
+  id: string | number; // Java uses UUID string, frontend may use number
   username: string;
   email: string;
   roles: { id: number; name: string; permissions?: string[] }[];
-  permissions: string[];
+  permissions: string[] | { id: number; name: string }[]; // Handle both formats
   firstName: string;
   lastName: string;
   isActive: boolean;

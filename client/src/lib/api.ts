@@ -63,7 +63,31 @@ export const userApi = {
     }
     const data = await response.json();
     console.log("[DEBUG] /api/users response:", data);
-    return data;
+    
+    // Transform Java backend response to frontend format
+    const transformedUsers = data.map((user: any) => {
+      // Transform permissions from object array to string array
+      let permissions: string[] = [];
+      if (Array.isArray(user.permissions)) {
+        permissions = user.permissions.map((p: any) => 
+          typeof p === 'string' ? p : p.name
+        );
+      }
+      
+      return {
+        id: user.id, // Keep as string (UUID from Java)
+        username: user.userName, // Convert userName to username for frontend
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        roles: user.roles || [],
+        permissions: permissions,
+        isActive: user.emailVerified !== false, // Map emailVerified to isActive
+        createdAt: new Date(user.createdAt),
+      };
+    });
+    
+    return transformedUsers;
   },
 
   getUser: async (id: number): Promise<AuthUser> => {

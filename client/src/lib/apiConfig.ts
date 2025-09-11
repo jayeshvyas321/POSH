@@ -15,7 +15,7 @@ const API_CONFIG = {
       ADD_PERMISSION: '/api/auth/addPermission',
     },
     USERS: {
-      LIST: '/api/users',
+      LIST: '/api/users?pageNo=0&pageSize=100&sortBy=id&sortDir=ASC', // Java pagination format
       GET: (id: number) => `/api/users/${id}`,
       CREATE: '/api/users',
       UPDATE: (id: number) => `/api/users/${id}`,
