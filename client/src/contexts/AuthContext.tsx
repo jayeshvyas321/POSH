@@ -63,28 +63,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       // Get API base URL from environment
       const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://98.130.134.68:8081';
-      const isJavaBackend = baseUrl.includes('8081'); // Check if calling Java backend
       const url = `${baseUrl}/api/auth/login`;
       console.log('Calling URL:', url);
       
-      // Send data in format backend expects
-      let loginData;
-      if (isJavaBackend) {
-        // Java backend expects userNameOrEmail field
-        loginData = {
-          userNameOrEmail: userNameOrEmail,
-          password: password
-        };
-      } else {
-        // Node.js backend expects email field (from loginSchema)
-        loginData = {
-          email: userNameOrEmail, // Node.js backend expects email field
-          password: password
-        };
-      }
+      // Send data in format Java backend expects
+      const loginData = {
+        userNameOrEmail: userNameOrEmail, // Java backend expects this field name
+        password: password
+      };
       
-      console.log('Login data for backend:', loginData);
-      console.log('Backend type:', isJavaBackend ? 'Java' : 'Node.js');
+      console.log('Login data for Java backend:', loginData);
       
       const response = await fetch(url, {
         method: 'POST',
@@ -146,38 +134,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log('Signup data being sent:', userData);
       
+      // Always transform field names to match Java backend entity:
+      // Frontend: username -> Backend: userName
+      // Frontend: isActive -> Backend: emailVerified (default false)
+      const transformedData = {
+        userName: userData.username, // Convert username to userName for Java backend
+        email: userData.email,
+        password: userData.password,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        emailVerified: false, // Default value for Java backend
+      };
+      
+      console.log('Transformed data for Java backend:', transformedData);
+      
       const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://98.130.134.68:8081';
-      const isJavaBackend = baseUrl.includes('8081'); // Check if calling Java backend
-      
-      let transformedData;
-      if (isJavaBackend) {
-        // Transform field names to match Java backend entity:
-        // Frontend: username -> Backend: userName
-        // Frontend: isActive -> Backend: emailVerified (default false)
-        transformedData = {
-          userName: userData.username, // Convert username to userName for Java backend
-          email: userData.email,
-          password: userData.password,
-          firstName: userData.firstName,
-          lastName: userData.lastName,
-          emailVerified: false, // Default value for Java backend
-        };
-      } else {
-        // Use original format for Node.js backend
-        transformedData = {
-          username: userData.username, // Keep username for Node.js backend
-          email: userData.email,
-          password: userData.password,
-          firstName: userData.firstName,
-          lastName: userData.lastName,
-          role: userData.role || 'ROLE_EMPLOYEE',
-          isActive: userData.isActive !== undefined ? userData.isActive : true,
-        };
-      }
-      
-      console.log('Transformed data for backend:', transformedData);
-      console.log('Backend type:', isJavaBackend ? 'Java' : 'Node.js');
-      
       const url = `${baseUrl}/api/auth/register`;
       console.log('Calling URL:', url);
       const token = localStorage.getItem('auth_token');

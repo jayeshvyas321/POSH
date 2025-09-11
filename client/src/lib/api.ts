@@ -73,24 +73,15 @@ export const userApi = {
   },
 
   createUser: async (data: InsertUser): Promise<AuthUser> => {
-    const baseUrl = API_CONFIG.BASE_URL;
-    const isJavaBackend = baseUrl.includes('8081'); // Check if calling Java backend
-    
-    let transformedData;
-    if (isJavaBackend) {
-      // Transform field names to match Java backend
-      transformedData = {
-        userName: data.username, // Convert username to userName for Java backend
-        email: data.email,
-        password: data.password,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        emailVerified: false, // Default value for Java backend
-      };
-    } else {
-      // Use original format for Node.js backend
-      transformedData = data;
-    }
+    // Always transform field names to match Java backend
+    const transformedData = {
+      userName: data.username, // Convert username to userName for Java backend
+      email: data.email,
+      password: data.password,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      emailVerified: false, // Default value for Java backend
+    };
     
     // Use the register endpoint for both admin add user and self-signup
     const response = await apiRequest("POST", buildApiUrl(API_CONFIG.ENDPOINTS.AUTH.REGISTER), transformedData);
