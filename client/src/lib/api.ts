@@ -55,8 +55,7 @@ export const userApi = {
       headers: {
         "Authorization": `Bearer ${token}`,
         "Accept": "application/json"
-      },
-      credentials: "include"
+      }
     });
     if (!response.ok) {
       const text = (await response.text()) || response.statusText;
@@ -73,14 +72,13 @@ export const userApi = {
   },
 
   createUser: async (data: InsertUser): Promise<AuthUser> => {
-    // Always transform field names to match Java backend
+    // Transform field names to match Java SignupRequest DTO
     const transformedData = {
-      userName: data.username, // Convert username to userName for Java backend
+      username: data.username, // SignupRequest DTO expects 'username' field
       email: data.email,
       password: data.password,
       firstName: data.firstName,
       lastName: data.lastName,
-      emailVerified: false, // Default value for Java backend
     };
     
     // Use the register endpoint for both admin add user and self-signup

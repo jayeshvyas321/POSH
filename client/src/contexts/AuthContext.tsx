@@ -134,16 +134,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log('Signup data being sent:', userData);
       
-      // Always transform field names to match Java backend entity:
-      // Frontend: username -> Backend: userName
-      // Frontend: isActive -> Backend: emailVerified (default false)
+      // Transform field names to match Java SignupRequest DTO:
+      // SignupRequest DTO expects: username, email, password, firstName, lastName
       const transformedData = {
-        userName: userData.username, // Convert username to userName for Java backend
+        username: userData.username, // SignupRequest DTO expects 'username' field
         email: userData.email,
         password: userData.password,
         firstName: userData.firstName,
         lastName: userData.lastName,
-        emailVerified: false, // Default value for Java backend
       };
       
       console.log('Transformed data for Java backend:', transformedData);
@@ -157,7 +155,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': token ? `Bearer ${token}` : '',
-          'accept': '*/*',
         },
         body: JSON.stringify(transformedData),
       });
