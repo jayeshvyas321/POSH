@@ -1,9 +1,14 @@
+import { apiRequest } from "@/lib/queryClient";
+import { buildApiUrl, API_CONFIG } from "@/lib/apiConfig";
+import type { AuthUser, DashboardStats } from "@/types";
+import type { LoginData, InsertUser } from "@shared/schema";
+
 // Logs API
 export const logsApi = {
   downloadLogs: async (): Promise<Blob> => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
     if (!token) throw new Error('No auth token found. Please login again.');
-    const response = await fetch("/logs/download", {
+    const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.LOGS.DOWNLOAD), {
       method: "GET",
       headers: {
         "Authorization": `Bearer ${token}`,
@@ -13,24 +18,21 @@ export const logsApi = {
     return response.blob();
   },
 };
-import { apiRequest } from "@/lib/queryClient";
-import type { AuthUser, DashboardStats } from "@/types";
-import type { LoginData, InsertUser } from "@shared/schema";
 
 // Authentication API
 export const authApi = {
   login: async (data: LoginData): Promise<{ user: AuthUser }> => {
-    const response = await apiRequest("POST", "/api/auth/login", data);
+    const response = await apiRequest("POST", buildApiUrl(API_CONFIG.ENDPOINTS.AUTH.LOGIN), data);
     return response.json();
   },
 
   signup: async (data: InsertUser): Promise<{ user: AuthUser }> => {
-    const response = await apiRequest("POST", "/api/auth/signup", data);
+    const response = await apiRequest("POST", buildApiUrl(API_CONFIG.ENDPOINTS.AUTH.SIGNUP), data);
     return response.json();
   },
 
   resetPassword: async (data: { email: string; otp: string; newPassword: string }) => {
-    const response = await fetch("/api/auth/reset-password", {
+    const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.AUTH.RESET_PASSWORD), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
@@ -48,8 +50,7 @@ export const userApi = {
   getUsers: async (): Promise<AuthUser[]> => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
     if (!token) throw new Error('No auth token found. Please login again.');
-    const apiUrl = window.location.origin + "/api/users";
-    const response = await fetch(apiUrl, {
+    const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.USERS.LIST), {
       method: "GET",
       headers: {
         "Authorization": `Bearer ${token}`,
@@ -67,23 +68,23 @@ export const userApi = {
   },
 
   getUser: async (id: number): Promise<AuthUser> => {
-    const response = await apiRequest("GET", `/api/users/${id}`);
+    const response = await apiRequest("GET", buildApiUrl(API_CONFIG.ENDPOINTS.USERS.GET(id)));
     return response.json();
   },
 
   createUser: async (data: InsertUser): Promise<AuthUser> => {
     // Use the register endpoint for both admin add user and self-signup
-    const response = await apiRequest("POST", "/api/auth/register", data);
+    const response = await apiRequest("POST", buildApiUrl(API_CONFIG.ENDPOINTS.AUTH.REGISTER), data);
     return response.json();
   },
 
   updateUser: async (id: number, data: Partial<InsertUser>): Promise<AuthUser> => {
-    const response = await apiRequest("PUT", `/api/users/${id}`, data);
+    const response = await apiRequest("PUT", buildApiUrl(API_CONFIG.ENDPOINTS.USERS.UPDATE(id)), data);
     return response.json();
   },
 
   deleteUser: async (id: number): Promise<void> => {
-    await apiRequest("DELETE", `/api/users/${id}`);
+    await apiRequest("DELETE", buildApiUrl(API_CONFIG.ENDPOINTS.USERS.DELETE(id)));
   },
 };
 
@@ -91,7 +92,7 @@ export const userApi = {
 export const rolesApi = {
   fetchRoles: async () => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-    const response = await fetch("/api/auth/getAllRoles", {
+    const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.AUTH.GET_ALL_ROLES), {
       method: "GET",
       headers: token ? { Authorization: `Bearer ${token}` } : {}
     });
@@ -100,7 +101,7 @@ export const rolesApi = {
   },
   addRoles: async (userName: string, roles: { name: string }[]) => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-    const response = await fetch("/api/auth/addRole", {
+    const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.AUTH.ADD_ROLE), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -116,7 +117,7 @@ export const rolesApi = {
 export const permissionsApi = {
   fetchPermissions: async () => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-    const response = await fetch("/api/auth/getAllPermissions", {
+    const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.AUTH.GET_ALL_PERMISSIONS), {
       method: "GET",
       headers: token ? { Authorization: `Bearer ${token}` } : {}
     });
@@ -125,7 +126,7 @@ export const permissionsApi = {
   },
   addPermissions: async (userName: string, permissions: { name: string }[]) => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-    const response = await fetch("/api/auth/addPermission", {
+    const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.AUTH.ADD_PERMISSION), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -141,17 +142,17 @@ export const permissionsApi = {
 // Notification API
 export const notificationApi = {
   getUserNotifications: async (userId: number) => {
-    const response = await apiRequest("GET", `/api/users/${userId}/notifications`);
+    const response = await apiRequest("GET", buildApiUrl(API_CONFIG.ENDPOINTS.USERS.NOTIFICATIONS(userId)));
     return response.json();
   },
 
   createNotification: async (data: any) => {
-    const response = await apiRequest("POST", "/api/notifications", data);
+    const response = await apiRequest("POST", buildApiUrl(API_CONFIG.ENDPOINTS.NOTIFICATIONS.CREATE), data);
     return response.json();
   },
 
   markAsRead: async (id: number) => {
-    const response = await apiRequest("PUT", `/api/notifications/${id}/read`);
+    const response = await apiRequest("PUT", buildApiUrl(API_CONFIG.ENDPOINTS.NOTIFICATIONS.MARK_READ(id)));
     return response.json();
   },
 };
@@ -159,7 +160,7 @@ export const notificationApi = {
 // Dashboard API
 export const dashboardApi = {
   getStats: async (): Promise<DashboardStats> => {
-    const response = await apiRequest("GET", "/api/dashboard/stats");
+    const response = await apiRequest("GET", buildApiUrl(API_CONFIG.ENDPOINTS.DASHBOARD.STATS));
     return response.json();
   },
 };
