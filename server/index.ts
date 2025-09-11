@@ -1,8 +1,24 @@
 import express, { type Request, Response, NextFunction } from "express";
+import cors from "cors";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
+
+// CORS configuration
+const corsOptions = {
+  origin: [
+    "http://localhost:5000",
+    "http://127.0.0.1:5000",
+    "http://98.130.134.68:44463", // Frontend production URL
+    "http://localhost:44463",     // Frontend local URL if needed
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 

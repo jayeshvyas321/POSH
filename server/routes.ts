@@ -60,6 +60,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Register endpoint (alias for signup for frontend compatibility)
+  app.post("/api/auth/register", async (req, res) => {
+    try {
+      const userData = insertUserSchema.parse(req.body);
+      
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(userData.email);
+      if (existingUser) {
+        return res.status(409).json({ message: "User already exists" });
+      }
+
+      const user = await storage.createUser(userData);
+      
+      // Remove password from response
+      const { password: _, ...userWithoutPassword } = user;
+      res.json({ user: userWithoutPassword });
+    } catch (error) {
+      res.status(400).json({ message: "Invalid request data" });
+    }
+  });
+
   // User routes
   app.get("/api/users", async (req, res) => {
     try {
