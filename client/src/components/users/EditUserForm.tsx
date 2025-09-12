@@ -8,17 +8,17 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { rolesApi, permissionsApi } from "@/lib/api";
 import type { AuthUser } from "@/types";
 
 const editUserSchema = z.object({
-  firstName: z.string(),
-  lastName: z.string(),
-  email: z.string().email(),
-  role: z.string(),
-  permissions: z.array(z.string()),
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  email: z.string().email("Invalid email address"),
+  role: z.string().min(1, "Role is required"),
+  permissions: z.array(z.string()).default([]),
 });
 
 type EditUserFormData = z.infer<typeof editUserSchema>;
@@ -44,7 +44,7 @@ export function EditUserForm({ user, isOpen, onClose }: EditUserFormProps) {
       lastName: user.lastName || "",
       email: user.email || "",
       role: user.roles && user.roles.length > 0 ? user.roles[0].name : "ROLE_EMPLOYEE",
-      permissions: user.permissions ? user.permissions.map((p: any) => p.name) : [],
+      permissions: Array.isArray(user.permissions) ? user.permissions.map((p: any) => typeof p === 'string' ? p : p.name) : [],
     },
   });
 
@@ -105,9 +105,9 @@ export function EditUserForm({ user, isOpen, onClose }: EditUserFormProps) {
       }
       
       if (!roleChanged && !permissionsChanged) {
-        console.log('[DEBUG] No changes detected - user will see success message but no API calls made');
-        toast({ title: "Info", description: "No changes detected", variant: "default" });
-        onClose();
+        console.log('[DEBUG] No changes detected');
+        toast({ title: "No changes", description: "No changes were made to save", variant: "default" });
+        setSaving(false);
         return;
       }
       
@@ -132,7 +132,10 @@ export function EditUserForm({ user, isOpen, onClose }: EditUserFormProps) {
           <div className="p-6 text-center text-gray-500">Loading roles and permissions...</div>
         ) : (
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit, (errors) => {
+              console.error('[ERROR] Form validation failed:', errors);
+              toast({ title: "Validation Error", description: "Please check all required fields", variant: "destructive" });
+            })} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
@@ -204,21 +207,23 @@ export function EditUserForm({ user, isOpen, onClose }: EditUserFormProps) {
                     <FormLabel>Permissions</FormLabel>
                     <div className="grid grid-cols-2 gap-2">
                       {permissions.map(perm => (
-                        <label key={perm.name} className="flex items-center gap-2">
-                          <input
-                            type="checkbox"
-                            value={perm.name}
-                            checked={field.value.includes(perm.name)}
-                            onChange={e => {
-                              if (e.target.checked) {
-                                field.onChange([...field.value, perm.name]);
+                        <div key={perm.name} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={perm.name}
+                            checked={field.value?.includes(perm.name) || false}
+                            onCheckedChange={(checked) => {
+                              const currentValue = field.value || [];
+                              if (checked) {
+                                field.onChange([...currentValue, perm.name]);
                               } else {
-                                field.onChange(field.value.filter((v: string) => v !== perm.name));
+                                field.onChange(currentValue.filter((v: string) => v !== perm.name));
                               }
                             }}
                           />
-                          <span>{perm.name}</span>
-                        </label>
+                          <label htmlFor={perm.name} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                            {perm.name}
+                          </label>
+                        </div>
                       ))}
                     </div>
                     <FormMessage />
