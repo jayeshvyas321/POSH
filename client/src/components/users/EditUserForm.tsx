@@ -69,6 +69,10 @@ export function EditUserForm({ user, isOpen, onClose }: EditUserFormProps) {
 
   const onSubmit = async (data: EditUserFormData) => {
     setSaving(true);
+    console.log('[DEBUG] Form submitted with data:', data);
+    console.log('[DEBUG] Original user:', user);
+    console.log('[DEBUG] Current environment API base:', import.meta.env.VITE_API_BASE_URL);
+    
     try {
       // Only call APIs if changes are made
       const roleChanged = !(user.roles && user.roles[0] && user.roles[0].name === data.role);
@@ -86,7 +90,8 @@ export function EditUserForm({ user, isOpen, onClose }: EditUserFormProps) {
         permissionsChanged,
         currentPermissions,
         newPermissions,
-        originalUser: user
+        originalUser: user,
+        formData: data
       });
       
       if (roleChanged) {
@@ -97,6 +102,13 @@ export function EditUserForm({ user, isOpen, onClose }: EditUserFormProps) {
       if (permissionsChanged) {
         console.log('[DEBUG] Adding permissions:', data.permissions);
         await permissionsApi.addPermissions(userName, data.permissions.map(name => ({ name })));
+      }
+      
+      if (!roleChanged && !permissionsChanged) {
+        console.log('[DEBUG] No changes detected - user will see success message but no API calls made');
+        toast({ title: "Info", description: "No changes detected", variant: "default" });
+        onClose();
+        return;
       }
       
       toast({ title: "Success", description: "User updated successfully" });
