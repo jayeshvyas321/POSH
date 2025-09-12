@@ -31,7 +31,7 @@ export function ResetPasswordForm() {
     }
   };
 
-  // Simulate verifying OTP (replace with real API if needed)
+  // Verify OTP (just validate locally, don't call API yet)
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -41,8 +41,7 @@ export function ResetPasswordForm() {
     }
     setLoading(true);
     try {
-      // Call the reset-password API with email and otp only
-      await authApi.resetPassword({ email, otp });
+      // Just move to password step - we'll validate OTP when resetting password
       setStep("password");
     } catch (e: any) {
       setError(e.message || "Failed to verify OTP. Try again.");

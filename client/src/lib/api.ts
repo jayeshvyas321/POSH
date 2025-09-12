@@ -31,7 +31,7 @@ export const authApi = {
     return response.json();
   },
 
-  resetPassword: async (data: { email: string; otp: string; newPassword: string }) => {
+  resetPassword: async (data: { email: string; otp?: string; newPassword?: string }) => {
     const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.AUTH.RESET_PASSWORD), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -39,7 +39,7 @@ export const authApi = {
     });
     if (!response.ok) {
       const err = await response.json();
-      throw new Error(err.detail || "Failed to reset password");
+      throw new Error(err.message || err.detail || "Failed to reset password");
     }
     return response.json();
   },
