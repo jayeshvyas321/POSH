@@ -13,6 +13,7 @@ const API_CONFIG = {
       ADD_ROLE: '/api/auth/addRole',
       GET_ALL_PERMISSIONS: '/api/auth/getAllPermissions',
       ADD_PERMISSION: '/api/auth/addPermission',
+      ADD_PERMISSION_TO_USER: '/api/auth/addPermissionToUser',
     },
     USERS: {
       LIST: '/api/users?pageNo=0&pageSize=100&sortBy=id&sortDir=ASC', // Java pagination format

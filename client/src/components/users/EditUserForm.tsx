@@ -72,20 +72,38 @@ export function EditUserForm({ user, isOpen, onClose }: EditUserFormProps) {
     try {
       // Only call APIs if changes are made
       const roleChanged = !(user.roles && user.roles[0] && user.roles[0].name === data.role);
-      const permissionsChanged = JSON.stringify((user.permissions || []).map((p: any) => p.name).sort()) !== JSON.stringify(data.permissions.slice().sort());
-      // Use user.username or user.email as fallback if username is missing
+      const currentPermissions = (user.permissions || []).map((p: any) => p.name).sort();
+      const newPermissions = data.permissions.slice().sort();
+      const permissionsChanged = JSON.stringify(currentPermissions) !== JSON.stringify(newPermissions);
+      
+      // Use user.username (which is the transformed userName from Java backend)
       const userName = user.username || user.email || "";
       if (!userName) throw new Error("Username is required to update roles/permissions");
+      
+      console.log('[DEBUG] Updating user:', {
+        userName,
+        roleChanged,
+        permissionsChanged,
+        currentPermissions,
+        newPermissions,
+        originalUser: user
+      });
+      
       if (roleChanged) {
+        console.log('[DEBUG] Adding role:', data.role);
         await rolesApi.addRoles(userName, [{ name: data.role }]);
       }
+      
       if (permissionsChanged) {
+        console.log('[DEBUG] Adding permissions:', data.permissions);
         await permissionsApi.addPermissions(userName, data.permissions.map(name => ({ name })));
       }
+      
       toast({ title: "Success", description: "User updated successfully" });
       queryClient.invalidateQueries({ queryKey: ["/api/users"] });
       onClose();
     } catch (e: any) {
+      console.error('[ERROR] Failed to update user:', e);
       toast({ title: "Error", description: e.message || "Failed to update user", variant: "destructive" });
     } finally {
       setSaving(false);

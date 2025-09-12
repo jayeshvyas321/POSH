@@ -170,16 +170,38 @@ export const permissionsApi = {
   },
   addPermissions: async (userName: string, permissions: { name: string }[]) => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-    const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.AUTH.ADD_PERMISSION), {
+    const requestBody = { action: "ADD", userName, permissions };
+    
+    console.log('[DEBUG] Adding permissions API call:', {
+      url: buildApiUrl(API_CONFIG.ENDPOINTS.AUTH.ADD_PERMISSION_TO_USER),
+      requestBody,
+      token: token ? 'Present' : 'Missing'
+    });
+    
+    const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.AUTH.ADD_PERMISSION_TO_USER), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {})
       },
-      body: JSON.stringify({ action: "ADD", userName, permissions })
+      body: JSON.stringify(requestBody)
     });
-    if (!response.ok) throw new Error("Failed to add permission");
-    return response.json();
+    
+    console.log('[DEBUG] Permission API response:', {
+      status: response.status,
+      statusText: response.statusText,
+      ok: response.ok
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[ERROR] Permission API failed:', errorText);
+      throw new Error(`Failed to add permission: ${response.status} ${errorText}`);
+    }
+    
+    const result = await response.json();
+    console.log('[DEBUG] Permission API success:', result);
+    return result;
   },
 };
 
