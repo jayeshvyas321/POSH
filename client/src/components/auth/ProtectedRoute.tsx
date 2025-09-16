@@ -19,6 +19,12 @@ export function ProtectedRoute({
   const [, setLocation] = useLocation();
 
   useEffect(() => {
+    // If not loading and no user, redirect to login
+    if (!isLoading && !user) {
+      setLocation("/login");
+      return;
+    }
+    
     if (!isLoading && user) {
       // Admins can access everything
       if (isAdmin()) {
@@ -47,13 +53,18 @@ export function ProtectedRoute({
     }
   }, [user, isLoading, permission, adminOnly, hasPermission, isAdmin, setLocation, fallbackPath, hasRole]);
 
-  // Show loading while checking permissions
+  // Show loading while checking authentication
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
       </div>
     );
+  }
+
+  // If no user, don't render anything (redirect will happen in useEffect)
+  if (!user) {
+    return null;
   }
 
   // Admins can access everything
